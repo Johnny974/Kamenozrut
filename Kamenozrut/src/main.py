@@ -50,8 +50,8 @@ while running:
         if GAME_STATE == TITLE_SCREEN_STATE:
             if singleplayer_button.is_clicked(event):
                 GAME_STATE = SINGLEPLAYER_SCREEN_STATE
-                board = game.initialize_grid()
-                game.update_grid(board)
+                game.initialize_grid()
+                # game.update_grid(board)
             if multiplayer_button.is_clicked(event):
                 GAME_STATE = MULTIPLAYER_SCREEN_STATE
             if options_button.is_clicked(event):
@@ -63,13 +63,15 @@ while running:
         elif GAME_STATE == SINGLEPLAYER_SCREEN_STATE:
             pos = pygame.mouse.get_pos()
             if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
-                for i, row in enumerate(board):
+                for i, row in enumerate(game.grid):
                     for j, cell in enumerate(row):
                         if cell is not None:
                             rect, color = cell
                             if rect.collidepoint(pos):
                                 game.handle_move(i, j, color)
-                                game.update_grid(board)
+                                # TODO Treba debugnúť celý grid a že kde sa to kazí
+
+                                #board = game.update_grid(updated_board)
 
                         # game.update_grid(result["grid"])
         # if quit_button.is_clicked(event):
@@ -84,14 +86,15 @@ while running:
         tutorial_button.draw(screen)
     elif GAME_STATE is SINGLEPLAYER_SCREEN_STATE:
         pos = pygame.mouse.get_pos()
-        for i, row in enumerate(board):
+
+        for i, row in enumerate(game.grid):
             for j, cell in enumerate(row):
                 if cell is not None:
                     rect, color = cell
                     if rect.collidepoint(pos):
                         connected_squares = game.find_connected_squares(i, j, color)
                         if len(connected_squares) > 1:
-                            game.highlight_connected_squares(connected_squares, screen, board)
+                            game.highlight_connected_squares(connected_squares, screen)
         game.draw(screen)
 
     quit_button.draw(screen)
