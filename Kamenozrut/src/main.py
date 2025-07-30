@@ -1,7 +1,7 @@
 import pygame
-import random
-from game import Game
+from game import Game, add_score
 from ui import Button, create_gradient, title_letter_separation, title_animation
+from sound import SoundManager
 
 
 FULL_HD_RESOLUTION = (1920, 1080)
@@ -18,20 +18,26 @@ screen = pygame.display.set_mode(FULL_HD_RESOLUTION)
 clock = pygame.time.Clock()
 
 game = Game(620, 400, 30, 4)
+soundManager = SoundManager()
+soundManager.play_music()
 
 singleplayer_button = Button(860, 550, 200, 60, "Singleplayer")
 multiplayer_button = Button(860, 630, 200, 60, "Multiplayer")
 options_button = Button(860, 710, 200, 60, "Options")
 tutorial_button = Button(860, 780, 200, 60, "How to play")
 quit_button = Button(860, 860, 200, 60, "Quit")
-game_id = 1
 
 pygame.display.set_caption("Kameňožrút")
 icon = pygame.image.load("../assets/images/rocks.png")
-font = pygame.font.Font("../assets/fonts/Audiowide-Regular.ttf", 100)
+title_font = pygame.font.Font("../assets/fonts/Audiowide-Regular.ttf", 100)
+ui_font = pygame.font.Font("../assets/fonts/Audiowide-Regular.ttf", 40)
 pygame.display.set_icon(icon)
 
-letters = title_letter_separation(FULL_HD_RESOLUTION, font)
+score = 0
+score_text = ui_font.render("Score:", 1, (255, 255, 255))
+score_value = ui_font.render(str(score), 1, (255, 255, 255))
+
+letters = title_letter_separation(FULL_HD_RESOLUTION, title_font)
 
 background = create_gradient(FULL_HD_RESOLUTION)
 running = True
@@ -68,10 +74,10 @@ while running:
                         if cell is not None:
                             rect, color = cell
                             if rect.collidepoint(pos):
-                                game.handle_move(i, j, color)
-                                # TODO Treba debugnúť celý grid a že kde sa to kazí
-
-                                #board = game.update_grid(updated_board)
+                                connected_squares_len = game.handle_move(i, j, color)
+                                score += add_score(connected_squares_len)
+                                score_value = ui_font.render(str(score), 1, (255, 255, 255))
+                                # board = game.update_grid(updated_board)
 
                         # game.update_grid(result["grid"])
         # if quit_button.is_clicked(event):
@@ -85,8 +91,10 @@ while running:
         options_button.draw(screen)
         tutorial_button.draw(screen)
     elif GAME_STATE is SINGLEPLAYER_SCREEN_STATE:
-        pos = pygame.mouse.get_pos()
+        screen.blit(score_text, (260, 870))
+        screen.blit(score_value, (410, 870))
 
+        pos = pygame.mouse.get_pos()
         for i, row in enumerate(game.grid):
             for j, cell in enumerate(row):
                 if cell is not None:

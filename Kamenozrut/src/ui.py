@@ -1,5 +1,4 @@
 import pygame
-import random
 
 FONT_SIZE = 40
 
@@ -101,4 +100,3 @@ def title_animation(resolution, letters, elapsed_time):
                 letter['speed_x'] = -letter['speed_x']
             if letter['rect'].top < 80 or letter['rect'].bottom > resolution[1] - 80:
                 letter['speed_y'] = -letter['speed_y']
-
