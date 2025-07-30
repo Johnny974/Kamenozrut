@@ -57,7 +57,6 @@ while running:
             if singleplayer_button.is_clicked(event):
                 GAME_STATE = SINGLEPLAYER_SCREEN_STATE
                 game.initialize_grid()
-                # game.update_grid(board)
             if multiplayer_button.is_clicked(event):
                 GAME_STATE = MULTIPLAYER_SCREEN_STATE
             if options_button.is_clicked(event):
@@ -77,11 +76,7 @@ while running:
                                 connected_squares_len = game.handle_move(i, j, color)
                                 score += add_score(connected_squares_len)
                                 score_value = ui_font.render(str(score), 1, (255, 255, 255))
-                                # board = game.update_grid(updated_board)
 
-                        # game.update_grid(result["grid"])
-        # if quit_button.is_clicked(event):
-        #     game.send_quit_button_press(game_id)
     if GAME_STATE is TITLE_SCREEN_STATE:
         title_animation(FULL_HD_RESOLUTION, letters, elapsed_time)
         for letter in letters:
@@ -107,6 +102,5 @@ while running:
 
     quit_button.draw(screen)
     pygame.display.flip()
-    clock.tick(60)  # 60 FPS
 
 pygame.quit()

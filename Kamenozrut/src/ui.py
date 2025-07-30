@@ -33,11 +33,11 @@ class Button:
         if self.outline_alpha > 0:
             outline_surf = self.font.render(self.text, True, (0, 0, 0))
             outline_rect = outline_surf.get_rect(center=self.rect.center)
-            # Vytvorenie povrchu pre okraj s alfa hodnotou
+
             outline_with_alpha = pygame.Surface(outline_surf.get_size(), pygame.SRCALPHA)
             outline_with_alpha.blit(outline_surf, (0, 0))
             outline_with_alpha.set_alpha(self.outline_alpha)
-            # Posunuté povrchy pre efekt okraja (viac smerov)
+
             screen.blit(outline_with_alpha, outline_rect.move(-2, -2))
             screen.blit(outline_with_alpha, outline_rect.move(2, -2))
             screen.blit(outline_with_alpha, outline_rect.move(-2, 2))
@@ -56,7 +56,6 @@ def create_gradient(resolution):
     gradient = pygame.Surface(resolution)
     for y in range(resolution[1]):
         t = y / resolution[1]
-        # RGB color
         color = (
             int(235),
             int(170 - 25 * t),
@@ -95,7 +94,6 @@ def title_animation(resolution, letters, elapsed_time):
         if elapsed_time >= letter['delay']:
             letter['rect'].x += letter['speed_x']
             letter['rect'].y += letter['speed_y']
-            # Odrážanie od okrajov
             if letter['rect'].left < 190 or letter['rect'].right > resolution[0] - 190:
                 letter['speed_x'] = -letter['speed_x']
             if letter['rect'].top < 80 or letter['rect'].bottom > resolution[1] - 80:

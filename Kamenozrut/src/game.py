@@ -21,7 +21,6 @@ class Game:
         return self.grid
 
     def draw(self, screen):
-        # mouse_pos = pygame.mouse.get_pos()
         for row in self.grid:
             for column in row:
                 if column is not None:
@@ -95,54 +94,6 @@ class Game:
                 self.grid[row][col] = column_values[row]
         self.shift_columns_left()
 
-    # TODO stále tu sú nejaké bugy
-    # def shift_columns_left(self, deleted_squares):
-    #     columns = set(col for row, col in deleted_squares)
-    #     for col in columns:
-    #         column_values = [self.grid[r][col] for r in range(self.grid_height)]
-    #         num_of_none = column_values.count(None)
-    #         if num_of_none == self.grid_height:
-    #             if col < len(self.grid[0]) - 1:
-    #                 for i in range(self.grid_height):
-    #                     for j in range(len(self.grid[0]) - 1, col - 1, - 1):
-    #                         if i != self.grid_width:
-    #                             self.grid[i][j] = self.grid[i][j + 1]
-    #                             if self.grid[i][j] is not None:
-    #                                 self.grid[i][j][0].left -= self.offset + self.square_size
-    #                         else:
-    #                             self.grid[i][j] = None
-    #             else:
-    #                 for k in range(self.grid_height):
-    #                     self.grid[k].pop(-1)
-    # def shift_columns_left(self):
-    #     new_grid = [[] for _ in range(self.grid_height)]
-    #     for i in range(self.grid_width):
-    #         column_values = [self.grid[j][i] for j in range(self.grid_height)]
-    #         num_of_none = column_values.count(None)
-    #         if num_of_none < self.grid_height:
-    #             for k in range(self.grid_height):
-    #                 new_grid[k].append(column_values[k])
-    #         else:
-    #             continue
-    #
-    #     # if len(new_grid[0]) < self.grid_width:
-    #     #     num_of_none_fill = self.grid_width - len(new_grid[0])
-    #     #     for li in new_grid:
-    #     #         for _ in range(num_of_none_fill):
-    #     #             li.append(None)
-    #
-    #     self.grid = new_grid
-    #     for row in self.grid:
-    #         color_row = []
-    #         for cell in row:
-    #             if cell is not None:
-    #                 color_row.append(cell[1])  # vezmeme len farbu
-    #             else:
-    #                 color_row.append(None)
-    #         print(color_row)
-    #     print('-----------------------------------------------------------')
-    #     # self.update_grid_position()
-
     def shift_columns_left(self):
         col = 0
         while col < self.grid_width:
@@ -165,19 +116,6 @@ class Game:
                     break
             else:
                 col += 1
-
-    def update_grid_position(self):
-        # for row in self.grid:
-        #     for i, square in enumerate(row):
-        #         if square is not None:
-        #             square[0].left = self.grid_start_x + i * self.offset + i * self.square_size
-        for row in range(self.grid_height):
-            for col in range(self.grid_width):
-                square = self.grid[row][col]
-                if square is not None:
-                    rect, color = square
-                    rect.left = self.grid_start_x + col * (self.square_size + self.offset)
-                    rect.top = self.grid_start_y + row * (self.square_size + self.offset)
 
 
 def remove_last_occurrence(lst, value):
