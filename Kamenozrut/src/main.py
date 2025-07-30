@@ -2,6 +2,7 @@ import pygame
 from game import Game, add_score
 from ui import Button, create_gradient, title_letter_separation, title_animation
 from sound import SoundManager
+from db import save_score
 
 
 FULL_HD_RESOLUTION = (1920, 1080)
@@ -36,6 +37,9 @@ pygame.display.set_icon(icon)
 score = 0
 score_text = ui_font.render("Score:", 1, (255, 255, 255))
 score_value = ui_font.render(str(score), 1, (255, 255, 255))
+win_text = title_font.render("You WON!", 1, (255, 255, 255))
+win_text_rect = win_text.get_rect(center=(FULL_HD_RESOLUTION[0] // 2, FULL_HD_RESOLUTION[1] // 2))
+game_over_message = ""
 
 letters = title_letter_separation(FULL_HD_RESOLUTION, title_font)
 
@@ -76,6 +80,7 @@ while running:
                                 connected_squares_len = game.handle_move(i, j, color)
                                 score += add_score(connected_squares_len)
                                 score_value = ui_font.render(str(score), 1, (255, 255, 255))
+                                game_over_message = game.is_game_over()
 
     if GAME_STATE is TITLE_SCREEN_STATE:
         title_animation(FULL_HD_RESOLUTION, letters, elapsed_time)
@@ -88,6 +93,9 @@ while running:
     elif GAME_STATE is SINGLEPLAYER_SCREEN_STATE:
         screen.blit(score_text, (260, 870))
         screen.blit(score_value, (410, 870))
+        if game_over_message == "You won":
+            screen.blit(win_text, win_text_rect)
+            save_score(score)
 
         pos = pygame.mouse.get_pos()
         for i, row in enumerate(game.grid):

@@ -65,18 +65,19 @@ class Game:
                 pygame.draw.rect(screen, (255, 255, 255), new_square)
 
     def handle_move(self, row, col, color):
-        if 0 > row >= self.grid_height and 0 > col >= self.grid_width:
-            return {"status": "error", "message": "Neplatná pozícia!"}
-        if self.grid[row][col] is None:
-            return {"status": "error", "message": "Políčko je prázdne!"}
+        # if 0 > row >= self.grid_height and 0 > col >= self.grid_width:
+        #     return {"status": "error", "message": "Neplatná pozícia!"}
+        # if self.grid[row][col] is None:
+        #     return {"status": "error", "message": "Políčko je prázdne!"}
 
         connected_squares = self.find_connected_squares(row, col, color)
         if len(connected_squares) > 1:
             for square in connected_squares:
                 self.grid[square[0]][square[1]] = None
-
-        self.drop_squares_in_grid(connected_squares)
-        return len(connected_squares)
+            self.drop_squares_in_grid(connected_squares)
+            return len(connected_squares)
+        else:
+            return 0
 
     def drop_squares_in_grid(self, deleted_squares):
         columns = set(col for row, col in deleted_squares)
@@ -116,6 +117,17 @@ class Game:
                     break
             else:
                 col += 1
+
+    def is_game_over(self):
+        is_grid_empty = all(
+            cell is None
+            for row in self.grid
+            for cell in row
+        )
+        if is_grid_empty:
+            return "You won"
+        if not is_grid_empty:
+            return "Game is not over yet"
 
 
 def remove_last_occurrence(lst, value):
