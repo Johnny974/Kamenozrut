@@ -10,9 +10,14 @@ class SoundManager:
             # "fall": pygame.mixer.Sound("assets/sounds/fall.wav"),
         }
         self.music_file = "../assets/sounds/Neo soul loopsy.wav"
-        self.music_toggle = True
 
     def play_music(self):
-        if self.music_toggle:
-            pygame.mixer.music.load(self.music_file)
-            pygame.mixer.music.play(-1)  # -1 = opakovane
+        pygame.mixer.music.load(self.music_file)
+        pygame.mixer.music.play(-1)  # -1 = opakovane
+
+    def set_music_volume(self, volume):
+        pygame.mixer.music.set_volume(volume / 10)
+
+    def set_sound_volume(self, volume):
+        for sound in self.sounds.values():
+            sound.set_volume(volume / 10)

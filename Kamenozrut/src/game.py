@@ -12,7 +12,8 @@ class Game:
         self.grid_width = grid_width
         # TODO v nastaveniach si vybrať color pallete
         # self.colors = [(255, 0, 0), (0, 0, 255), (0, 255, 0)]
-        self.colors = [(49, 86, 89), (65, 211, 189), (186, 50, 79), (255, 186, 73)]
+        # self.colors = [(49, 86, 89), (65, 211, 189), (186, 50, 79), (255, 186, 73)]
+        self.colors = ""
         self.button_pressed = False
         self.grid = []
 
@@ -26,6 +27,11 @@ class Game:
                 if column is not None:
                     pygame.draw.rect(screen, column[1], column[0])
 
+    def draw_color_scheme_selection(self, screen, colors):
+        for row in colors:
+            for color in row:
+                pygame.draw.rect(screen, color[1], color[0])
+
     def initialize_grid(self):
         for i in range(self.grid_height):
             row = []
@@ -36,6 +42,24 @@ class Game:
                 row.append(rect)
             self.grid.append(row)
         return self.grid
+
+    def initialize_color_scheme_squares(self, colors):
+        color_scheme_grid = []
+        x = 670
+        y = 580
+        for i in range(len(colors)):
+            row = []
+            for j in range(len(colors[0])):
+                rect = (pygame.Rect(x + j * self.offset + j * self.square_size,
+                                    y + self.offset + self.square_size,
+                                    self.square_size, self.square_size), colors[i][j])
+                row.append(rect)
+            x += 380
+            if i == 1:
+                x = 670
+                y += 130
+            color_scheme_grid.append(row)
+        return color_scheme_grid
 
     def find_connected_squares(self, start_row, start_col, color):
         to_check = [(start_row, start_col)]
