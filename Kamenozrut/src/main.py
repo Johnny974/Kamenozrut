@@ -1,6 +1,6 @@
 import pygame
 from game import Game, add_score
-from ui import Button, create_gradient, title_letter_separation, title_animation
+from ui import Button, create_gradient, title_letter_separation, title_animation, FONT_SIZE, TITLE_FONT_SIZE
 from sound import SoundManager
 from db import (set_score, get_max_score, set_musiclevel, get_musiclevel, set_soundlevel, get_soundlevel,
                 set_colorscheme, get_colorscheme)
@@ -44,8 +44,8 @@ color_scheme_4 = Button(1050, 680, 200, 60, "Lush Lagoon")
 
 pygame.display.set_caption("Kameňožrút")
 icon = pygame.image.load("../assets/images/rocks.png")
-title_font = pygame.font.Font("../assets/fonts/Audiowide-Regular.ttf", 100)
-ui_font = pygame.font.Font("../assets/fonts/Audiowide-Regular.ttf", 40)
+title_font = pygame.font.Font("../assets/fonts/Audiowide-Regular.ttf", TITLE_FONT_SIZE)
+ui_font = pygame.font.Font("../assets/fonts/Audiowide-Regular.ttf", FONT_SIZE)
 pygame.display.set_icon(icon)
 
 all_colors = [[(49, 86, 89), (65, 211, 189), (186, 50, 79), (255, 186, 73), (255, 169, 231), (254, 225, 199)], # color chaos
@@ -72,6 +72,24 @@ sound_level_rect = sound_level_text.get_rect(center=(FULL_HD_RESOLUTION[0] // 2,
 default_scheme = get_colorscheme()
 color_scheme = ui_font.render("Choose a color scheme:", 1, (255, 255, 255))
 color_scheme_rect = color_scheme.get_rect(center=(FULL_HD_RESOLUTION[0] // 2, FULL_HD_RESOLUTION[1] // 2 - 30))
+
+tutorial_text_1 = ui_font.render("1. Your goal is to remove all the stones on the board.", 1, (255, 255, 255))
+tutorial_text_1_rect = tutorial_text_1.get_rect(center=(FULL_HD_RESOLUTION[0] // 2, 160))
+
+tutorial_text_2 = ui_font.render("2. You can only destroy group of adjacent stones of the same color.", 1, (255, 255, 255))
+tutorial_text_2_rect = tutorial_text_2.get_rect(center=(FULL_HD_RESOLUTION[0] // 2, 240))
+
+tutorial_text_3 = ui_font.render("3. If there is a gap in a column, the stones will drop down.", 1, (255, 255, 255))
+tutorial_text_3_rect = tutorial_text_3.get_rect(center=(FULL_HD_RESOLUTION[0] // 2, 320))
+
+tutorial_text_4 = ui_font.render("4. If you win, your score is written into a database.", 1, (255, 255, 255))
+tutorial_text_4_rect = tutorial_text_4.get_rect(center=(FULL_HD_RESOLUTION[0] // 2, 400))
+
+tutorial_text_5 = ui_font.render("5. After winning, you can add up to your score in the next game!", 1, (255, 255, 255))
+tutorial_text_5_rect = tutorial_text_5.get_rect(center=(FULL_HD_RESOLUTION[0] // 2, 480))
+
+tutorial_text_6 = ui_font.render("Good luck and have fun!", 1, (255, 255, 255))
+tutorial_text_6_rect = tutorial_text_6.get_rect(center=(FULL_HD_RESOLUTION[0] // 2, 660))
 
 score = 0
 score_text = ui_font.render("Score:", 1, (255, 255, 255))
@@ -245,6 +263,12 @@ while running:
         elif default_scheme == 3:
             pygame.draw.line(screen, (0, 0, 0), (1040, 790), (1260, 790), 5)
     elif GAME_STATE == TUTORIAL_SCREEN_STATE:
+        screen.blit(tutorial_text_1, tutorial_text_1_rect)
+        screen.blit(tutorial_text_2, tutorial_text_2_rect)
+        screen.blit(tutorial_text_3, tutorial_text_3_rect)
+        screen.blit(tutorial_text_4, tutorial_text_4_rect)
+        screen.blit(tutorial_text_5, tutorial_text_5_rect)
+        screen.blit(tutorial_text_6, tutorial_text_6_rect)
         back_button.draw(screen)
 
     quit_button.draw(screen)

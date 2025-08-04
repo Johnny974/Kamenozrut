@@ -1,5 +1,6 @@
 import pygame
 
+TITLE_FONT_SIZE = 100
 FONT_SIZE = 40
 
 
