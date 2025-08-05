@@ -1,6 +1,6 @@
 import pygame
 
-
+# TODO Need to add sounds and new music
 class SoundManager:
     def __init__(self):
         pygame.mixer.init()

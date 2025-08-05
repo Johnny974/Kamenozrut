@@ -24,6 +24,7 @@ game = Game(620, 300, 30, 4)
 soundManager = SoundManager()
 soundManager.play_music()
 
+# TODO should i move these buttons and texts to a different file?
 singleplayer_button = Button(860, 580, 200, 60, "Singleplayer")
 multiplayer_button = Button(860, 650, 200, 60, "Multiplayer")
 options_button = Button(860, 720, 200, 60, "Options")
@@ -42,21 +43,24 @@ color_scheme_2 = Button(1050, 550, 200, 60, "Passionate Papaya")
 color_scheme_3 = Button(670, 680, 200, 60, "Boring Brick")
 color_scheme_4 = Button(1050, 680, 200, 60, "Lush Lagoon")
 
+new_game_button = Button(860, 580, 200, 60, "New game")
+
 pygame.display.set_caption("Kameňožrút")
 icon = pygame.image.load("../assets/images/rocks.png")
 title_font = pygame.font.Font("../assets/fonts/Audiowide-Regular.ttf", TITLE_FONT_SIZE)
 ui_font = pygame.font.Font("../assets/fonts/Audiowide-Regular.ttf", FONT_SIZE)
 pygame.display.set_icon(icon)
 
-all_colors = [[(49, 86, 89), (65, 211, 189), (186, 50, 79), (255, 186, 73), (255, 169, 231), (254, 225, 199)], # color chaos
-              [(114, 17, 33), (165, 64, 45), (241, 81, 86), (249, 160, 63), (255, 192, 127), (255, 207, 153),], # passionate papaya
-              [(70, 63, 58), (8, 3, 87), (138, 129, 124), (188, 184, 177), (244, 243, 238), (224, 175, 160)], # boring brick
-              [(4, 42, 43), (55, 39, 114), (116, 124, 146), (148, 197, 149), (161, 232, 175), (253, 236, 239)]] # lush lagoon
+all_colors = [[(49, 86, 89), (65, 211, 189), (186, 50, 79), (255, 186, 73), (255, 169, 231), (254, 225, 199)],  # color chaos
+              [(114, 17, 33), (165, 64, 45), (241, 81, 86), (249, 160, 63), (255, 192, 127), (255, 207, 153),],  # passionate papaya
+              [(70, 63, 58), (8, 3, 87), (138, 129, 124), (188, 184, 177), (244, 243, 238), (224, 175, 160)],  # boring brick
+              [(4, 42, 43), (55, 39, 114), (116, 124, 146), (148, 197, 149), (161, 232, 175), (253, 236, 239)]]  # lush lagoon
 
 music_level_value = get_musiclevel()
 soundManager.set_music_volume(music_level_value)
 music_level_value_text = ui_font.render(str(music_level_value), 1, (255, 255, 255))
-music_level_value_rect = music_level_value_text.get_rect(center=(FULL_HD_RESOLUTION[0] // 2, FULL_HD_RESOLUTION[1] // 2 - 310))
+music_level_value_rect = music_level_value_text.get_rect(center=(FULL_HD_RESOLUTION[0] // 2,
+                                                                 FULL_HD_RESOLUTION[1] // 2 - 310))
 
 music_level_text = ui_font.render("Music level", 1, (255, 255, 255))
 music_level_rect = music_level_text.get_rect(center=(FULL_HD_RESOLUTION[0] // 2, FULL_HD_RESOLUTION[1] // 2 - 350))
@@ -64,7 +68,8 @@ music_level_rect = music_level_text.get_rect(center=(FULL_HD_RESOLUTION[0] // 2,
 sound_level_value = get_soundlevel()
 soundManager.set_sound_volume(sound_level_value)
 sound_level_value_text = ui_font.render(str(sound_level_value), 1, (255, 255, 255))
-sound_level_value_rect = sound_level_value_text.get_rect(center=(FULL_HD_RESOLUTION[0] // 2, FULL_HD_RESOLUTION[1] // 2 - 210))
+sound_level_value_rect = sound_level_value_text.get_rect(center=(FULL_HD_RESOLUTION[0] // 2,
+                                                                 FULL_HD_RESOLUTION[1] // 2 - 210))
 
 sound_level_text = ui_font.render("Sound level", 1, (255, 255, 255))
 sound_level_rect = sound_level_text.get_rect(center=(FULL_HD_RESOLUTION[0] // 2, FULL_HD_RESOLUTION[1] // 2 - 250))
@@ -73,19 +78,24 @@ default_scheme = get_colorscheme()
 color_scheme = ui_font.render("Choose a color scheme:", 1, (255, 255, 255))
 color_scheme_rect = color_scheme.get_rect(center=(FULL_HD_RESOLUTION[0] // 2, FULL_HD_RESOLUTION[1] // 2 - 30))
 
-tutorial_text_1 = ui_font.render("1. Your goal is to remove all the stones on the board.", 1, (255, 255, 255))
+tutorial_text_1 = ui_font.render("1. Your goal is to remove all the stones on the board.",
+                                 1, (255, 255, 255))
 tutorial_text_1_rect = tutorial_text_1.get_rect(center=(FULL_HD_RESOLUTION[0] // 2, 160))
 
-tutorial_text_2 = ui_font.render("2. You can only destroy group of adjacent stones of the same color.", 1, (255, 255, 255))
+tutorial_text_2 = ui_font.render("2. You can only destroy group of adjacent stones of the same color.",
+                                 1, (255, 255, 255))
 tutorial_text_2_rect = tutorial_text_2.get_rect(center=(FULL_HD_RESOLUTION[0] // 2, 240))
 
-tutorial_text_3 = ui_font.render("3. If there is a gap in a column, the stones will drop down.", 1, (255, 255, 255))
+tutorial_text_3 = ui_font.render("3. If there is a gap in a column, the stones will drop down.",
+                                 1, (255, 255, 255))
 tutorial_text_3_rect = tutorial_text_3.get_rect(center=(FULL_HD_RESOLUTION[0] // 2, 320))
 
-tutorial_text_4 = ui_font.render("4. If you win, your score is written into a database.", 1, (255, 255, 255))
+tutorial_text_4 = ui_font.render("4. If you win, your score is written into a database.",
+                                 1, (255, 255, 255))
 tutorial_text_4_rect = tutorial_text_4.get_rect(center=(FULL_HD_RESOLUTION[0] // 2, 400))
 
-tutorial_text_5 = ui_font.render("5. After winning, you can add up to your score in the next game!", 1, (255, 255, 255))
+tutorial_text_5 = ui_font.render("5. After winning, you can add up to your score in the next game!",
+                                 1, (255, 255, 255))
 tutorial_text_5_rect = tutorial_text_5.get_rect(center=(FULL_HD_RESOLUTION[0] // 2, 480))
 
 tutorial_text_6 = ui_font.render("Good luck and have fun!", 1, (255, 255, 255))
@@ -113,7 +123,7 @@ while running:
     elapsed_time += delta_time
 
     screen.blit(background, (0, 0))
-    # TODO treba to nejako sprehľadniť - je tu chaos v tom kóde
+    # TODO is it possible to make this code more readable?
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
@@ -129,7 +139,6 @@ while running:
                 GAME_STATE = OPTIONS_SCREEN_STATE
             if tutorial_button.is_clicked(event):
                 GAME_STATE = TUTORIAL_SCREEN_STATE
-                print("Tutorial")
 
         elif GAME_STATE == SINGLEPLAYER_SCREEN_STATE:
             pos = pygame.mouse.get_pos()
@@ -145,9 +154,16 @@ while running:
                                 game_over_message = game.is_game_over()
                                 if game_over_message == "You won":
                                     set_score(score)
-
+            # TODO need to remember the singleplayer mode to choose correct game.colors
             if back_button.is_clicked(event):
                 GAME_STATE = TITLE_SCREEN_STATE
+                game = Game(620, 300, 30, 4)
+                default_scheme = get_colorscheme()
+            if game_over_message == "You won" and new_game_button.is_clicked(event):
+                game_over_message = ""
+                game = Game(620, 300, 30, 4)
+                default_scheme = get_colorscheme()
+                game.initialize_grid()
         elif GAME_STATE == SINGLEPLAYER_MODE_SELECTION_STATE:
             if standard_singleplayer_mode_button.is_clicked(event):
                 game.colors = all_colors[default_scheme][:4]
@@ -162,6 +178,7 @@ while running:
         elif GAME_STATE == MULTIPLAYER_SCREEN_STATE:
             if back_button.is_clicked(event):
                 GAME_STATE = TITLE_SCREEN_STATE
+        # TODO need to add options also on escape key
         elif GAME_STATE == OPTIONS_SCREEN_STATE:
             if music_up_button.is_clicked(event):
                 if music_level_value < 10:
@@ -221,6 +238,7 @@ while running:
         back_button.draw(screen)
         if game_over_message == "You won":
             screen.blit(win_text, win_text_rect)
+            new_game_button.draw(screen)
 
         pos = pygame.mouse.get_pos()
         for i, row in enumerate(game.grid):

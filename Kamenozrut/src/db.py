@@ -4,6 +4,7 @@ conn = sqlite3.connect("game_scores.db")
 
 cursor = conn.cursor()
 
+# TODO timestamp is in UTC - i need to get the time of the PC
 cursor.execute("""
 CREATE TABLE IF NOT EXISTS scores (
     id INTEGER PRIMARY KEY AUTOINCREMENT,

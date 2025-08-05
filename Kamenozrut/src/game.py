@@ -10,9 +10,6 @@ class Game:
         self.offset = offset
         self.grid_height = grid_height
         self.grid_width = grid_width
-        # TODO v nastaveniach si vybrať color pallete
-        # self.colors = [(255, 0, 0), (0, 0, 255), (0, 255, 0)]
-        # self.colors = [(49, 86, 89), (65, 211, 189), (186, 50, 79), (255, 186, 73)]
         self.colors = ""
         self.button_pressed = False
         self.grid = []
@@ -142,6 +139,7 @@ class Game:
             else:
                 col += 1
 
+    # TODO need to check, when there are no moves ôeft
     def is_game_over(self):
         is_grid_empty = all(
             cell is None
