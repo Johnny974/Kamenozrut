@@ -3,7 +3,7 @@ from game import Game, add_score
 from ui import Button, create_gradient, title_letter_separation, title_animation, FONT_SIZE, TITLE_FONT_SIZE
 from sound import SoundManager
 from db import (set_score, get_max_score, set_musiclevel, get_musiclevel, set_soundlevel, get_soundlevel,
-                set_colorscheme, get_colorscheme)
+                set_colorscheme, get_colorscheme, update_score)
 
 
 FULL_HD_RESOLUTION = (1920, 1080)
@@ -14,6 +14,7 @@ OPTIONS_SCREEN_STATE = 4
 TUTORIAL_SCREEN_STATE = 5
 SINGLEPLAYER_MODE_SELECTION_STATE = 6
 GAME_STATE = TITLE_SCREEN_STATE
+CURRENT_GAME_MODE = ""
 flags = pygame.RESIZABLE
 
 pygame.init()
@@ -43,7 +44,7 @@ color_scheme_2 = Button(1050, 550, 200, 60, "Passionate Papaya")
 color_scheme_3 = Button(670, 680, 200, 60, "Boring Brick")
 color_scheme_4 = Button(1050, 680, 200, 60, "Lush Lagoon")
 
-new_game_button = Button(860, 580, 200, 60, "New game")
+new_game_button = Button(860, 120, 200, 60, "New game")
 
 pygame.display.set_caption("Kameňožrút")
 icon = pygame.image.load("../assets/images/rocks.png")
@@ -51,10 +52,10 @@ title_font = pygame.font.Font("../assets/fonts/Audiowide-Regular.ttf", TITLE_FON
 ui_font = pygame.font.Font("../assets/fonts/Audiowide-Regular.ttf", FONT_SIZE)
 pygame.display.set_icon(icon)
 
-all_colors = [[(49, 86, 89), (65, 211, 189), (186, 50, 79), (255, 186, 73), (255, 169, 231), (254, 225, 199)],  # color chaos
-              [(114, 17, 33), (165, 64, 45), (241, 81, 86), (249, 160, 63), (255, 192, 127), (255, 207, 153),],  # passionate papaya
-              [(70, 63, 58), (8, 3, 87), (138, 129, 124), (188, 184, 177), (244, 243, 238), (224, 175, 160)],  # boring brick
-              [(4, 42, 43), (55, 39, 114), (116, 124, 146), (148, 197, 149), (161, 232, 175), (253, 236, 239)]]  # lush lagoon
+all_colors = [[(65, 211, 189), (186, 50, 79), (255, 186, 73), (255, 169, 231), (254, 225, 199)],  # color chaos
+              [(114, 17, 33), (165, 64, 45), (241, 81, 86), (249, 160, 63), (255, 207, 153),],  # passionate papaya
+              [(241, 81, 82), (255, 125, 0), (255, 236, 209), (21, 97, 109), (0, 21, 36)],  # boring brick
+              [(177, 24, 200), (223, 253, 255), (144, 190, 222), (104, 237, 198), (144, 243, 255)]]  # lush lagoon
 
 music_level_value = get_musiclevel()
 soundManager.set_music_volume(music_level_value)
@@ -101,17 +102,21 @@ tutorial_text_5_rect = tutorial_text_5.get_rect(center=(FULL_HD_RESOLUTION[0] //
 tutorial_text_6 = ui_font.render("Good luck and have fun!", 1, (255, 255, 255))
 tutorial_text_6_rect = tutorial_text_6.get_rect(center=(FULL_HD_RESOLUTION[0] // 2, 660))
 
+won_any_game = False
 score = 0
 score_text = ui_font.render("Score:", 1, (255, 255, 255))
 score_value = ui_font.render(str(score), 1, (255, 255, 255))
 
-high_score = get_max_score()
+high_score = 0
 high_score_text = ui_font.render("High Score:", 1, (255, 255, 255))
 high_score_value = ui_font.render(str(high_score), 1, (255, 255, 255))
 
 win_text = title_font.render("You WON!", 1, (255, 255, 255))
 win_text_rect = win_text.get_rect(center=(FULL_HD_RESOLUTION[0] // 2, FULL_HD_RESOLUTION[1] // 2))
 game_over_message = ""
+
+lose_text = title_font.render("You LOST!", 1, (255, 255, 255))
+lose_text_rect = win_text.get_rect(center=(FULL_HD_RESOLUTION[0] // 2, FULL_HD_RESOLUTION[1] // 2))
 
 letters = title_letter_separation(FULL_HD_RESOLUTION, title_font)
 
@@ -151,28 +156,71 @@ while running:
                                 connected_squares_len = game.handle_move(i, j, color)
                                 score += add_score(connected_squares_len)
                                 score_value = ui_font.render(str(score), 1, (255, 255, 255))
+                                if score > high_score:
+                                    high_score_value = ui_font.render(str(score), 1, (255, 255, 255))
                                 game_over_message = game.is_game_over()
                                 if game_over_message == "You won":
-                                    set_score(score)
-            # TODO need to remember the singleplayer mode to choose correct game.colors
+                                    # TODO i need only to update the score when I win 2 or more in a row
+                                    won_any_game = True
+                                    if CURRENT_GAME_MODE == "Standard":
+                                        set_score(score, CURRENT_GAME_MODE)
+                                    elif CURRENT_GAME_MODE == "ColorMadness":
+                                        set_score(score, CURRENT_GAME_MODE)
+                                elif game_over_message == "No moves left":
+                                    if won_any_game:
+                                        set_score(score, CURRENT_GAME_MODE)
+
+                                # TODO need to think about this
+                                if won_any_game:
+                                    # TODO doesnt work, why?
+                                    update_score(score, CURRENT_GAME_MODE)
+
             if back_button.is_clicked(event):
                 GAME_STATE = TITLE_SCREEN_STATE
                 game = Game(620, 300, 30, 4)
                 default_scheme = get_colorscheme()
+                CURRENT_GAME_MODE = ""
+                score = 0
+                score_value = ui_font.render(str(score), 1, (255, 255, 255))
+                won_any_game = False
             if game_over_message == "You won" and new_game_button.is_clicked(event):
                 game_over_message = ""
                 game = Game(620, 300, 30, 4)
                 default_scheme = get_colorscheme()
+
+                if CURRENT_GAME_MODE == "Standard":
+                    game.colors = all_colors[default_scheme][:4]
+                else:
+                    game.colors = all_colors[default_scheme]
                 game.initialize_grid()
+            elif game_over_message == "No moves left" and new_game_button.is_clicked(event):
+                game_over_message = ""
+                game = Game(620, 300, 30, 4)
+                default_scheme = get_colorscheme()
+
+                if CURRENT_GAME_MODE == "Standard":
+                    game.colors = all_colors[default_scheme][:4]
+                else:
+                    game.colors = all_colors[default_scheme]
+                game.initialize_grid()
+                score = 0
+                score_value = ui_font.render(str(score), 1, (255, 255, 255))
+                won_any_game = False
         elif GAME_STATE == SINGLEPLAYER_MODE_SELECTION_STATE:
             if standard_singleplayer_mode_button.is_clicked(event):
                 game.colors = all_colors[default_scheme][:4]
                 game.initialize_grid()
                 GAME_STATE = SINGLEPLAYER_SCREEN_STATE
+                CURRENT_GAME_MODE = "Standard"
+                high_score = get_max_score(CURRENT_GAME_MODE)
+                high_score_value = ui_font.render(str(high_score), 1, (255, 255, 255))
             if color_madness_singleplayer_mode_button.is_clicked(event):
                 game.colors = all_colors[default_scheme]
                 game.initialize_grid()
                 GAME_STATE = SINGLEPLAYER_SCREEN_STATE
+                CURRENT_GAME_MODE = "ColorMadness"
+                high_score = get_max_score(CURRENT_GAME_MODE)
+                high_score_value = ui_font.render(str(high_score), 1, (255, 255, 255))
             if back_button.is_clicked(event):
                 GAME_STATE = TITLE_SCREEN_STATE
         elif GAME_STATE == MULTIPLAYER_SCREEN_STATE:
@@ -236,9 +284,6 @@ while running:
         screen.blit(score_text, (260, 870))
         screen.blit(score_value, (410, 870))
         back_button.draw(screen)
-        if game_over_message == "You won":
-            screen.blit(win_text, win_text_rect)
-            new_game_button.draw(screen)
 
         pos = pygame.mouse.get_pos()
         for i, row in enumerate(game.grid):
@@ -250,6 +295,12 @@ while running:
                         if len(connected_squares) > 1:
                             game.highlight_connected_squares(connected_squares, screen)
         game.draw(screen)
+        if game_over_message == "You won":
+            screen.blit(win_text, win_text_rect)
+            new_game_button.draw(screen)
+        elif game_over_message == "No moves left":
+            screen.blit(lose_text, lose_text_rect)
+            new_game_button.draw(screen)
     elif GAME_STATE == SINGLEPLAYER_MODE_SELECTION_STATE:
         standard_singleplayer_mode_button.draw(screen)
         color_madness_singleplayer_mode_button.draw(screen)
@@ -273,13 +324,13 @@ while running:
         back_button.draw(screen)
         game.draw_color_scheme_selection(screen, color_scheme_grid)
         if default_scheme == 0:
-            pygame.draw.line(screen, (0, 0, 0), (660, 660), (880, 660), 5)
+            pygame.draw.line(screen, (0, 0, 0), (680, 660), (870, 660), 5)
         elif default_scheme == 1:
-            pygame.draw.line(screen, (0, 0, 0), (1040, 660), (1260, 660), 5)
+            pygame.draw.line(screen, (0, 0, 0), (1060, 660), (1250, 660), 5)
         elif default_scheme == 2:
-            pygame.draw.line(screen, (0, 0, 0), (660, 790), (880, 790), 5)
+            pygame.draw.line(screen, (0, 0, 0), (680, 790), (870, 790), 5)
         elif default_scheme == 3:
-            pygame.draw.line(screen, (0, 0, 0), (1040, 790), (1260, 790), 5)
+            pygame.draw.line(screen, (0, 0, 0), (1060, 790), (1250, 790), 5)
     elif GAME_STATE == TUTORIAL_SCREEN_STATE:
         screen.blit(tutorial_text_1, tutorial_text_1_rect)
         screen.blit(tutorial_text_2, tutorial_text_2_rect)

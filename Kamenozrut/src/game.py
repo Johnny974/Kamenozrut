@@ -42,7 +42,7 @@ class Game:
 
     def initialize_color_scheme_squares(self, colors):
         color_scheme_grid = []
-        x = 670
+        x = 690
         y = 580
         for i in range(len(colors)):
             row = []
@@ -53,7 +53,7 @@ class Game:
                 row.append(rect)
             x += 380
             if i == 1:
-                x = 670
+                x = 690
                 y += 130
             color_scheme_grid.append(row)
         return color_scheme_grid
@@ -139,7 +139,7 @@ class Game:
             else:
                 col += 1
 
-    # TODO need to check, when there are no moves ôeft
+    # TODO need to check, when there are no moves left
     def is_game_over(self):
         is_grid_empty = all(
             cell is None
@@ -148,8 +148,26 @@ class Game:
         )
         if is_grid_empty:
             return "You won"
-        if not is_grid_empty:
-            return "Game is not over yet"
+
+        for row in range(self.grid_height):
+            for col in range(self.grid_width):
+                cell = self.grid[row][col]
+                if cell is None:
+                    continue
+                _, color = cell
+
+                if col + 1 < self.grid_width:
+                    neighbor = self.grid[row][col + 1]
+                    if neighbor is not None and neighbor[1] == color:
+                        return "There is a possible move"
+
+                # Pozri dole
+                if row + 1 < self.grid_height:
+                    neighbor = self.grid[row + 1][col]
+                    if neighbor is not None and neighbor[1] == color:
+                        return "There is a possible move"
+
+        return "No moves left"
 
 
 def remove_last_occurrence(lst, value):
