@@ -139,7 +139,6 @@ class Game:
             else:
                 col += 1
 
-    # TODO need to check, when there are no moves left
     def is_game_over(self):
         is_grid_empty = all(
             cell is None

@@ -3,7 +3,7 @@ import pygame
 TITLE_FONT_SIZE = 100
 FONT_SIZE = 40
 
-
+# TODO animation on falling of the stones
 class Button:
     def __init__(self, x, y, width, height, text, color=(100, 100, 100), hover_color=(200, 200, 200)):
         self.rect = pygame.Rect(x, y, width, height)

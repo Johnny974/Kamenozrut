@@ -1,4 +1,5 @@
 import pygame
+import random
 
 # TODO Need to add sounds and new music
 class SoundManager:
@@ -9,11 +10,15 @@ class SoundManager:
             # "match": pygame.mixer.Sound("assets/sounds/match.wav"),
             # "fall": pygame.mixer.Sound("assets/sounds/fall.wav"),
         }
-        self.music_file = "../assets/sounds/Neo soul loopsy.wav"
+        self.music_files = ["../assets/sounds/Neo soul loopsy.wav",
+                           "../assets/sounds/Pixel Nostalgia.wav"]
+        self.MUSIC_END_EVENT = pygame.USEREVENT + 1
+        self.MUSIC_DELAY_EVENT = pygame.USEREVENT + 2
+        pygame.mixer.music.set_endevent(self.MUSIC_END_EVENT)
 
     def play_music(self):
-        pygame.mixer.music.load(self.music_file)
-        pygame.mixer.music.play(-1)  # -1 = opakovane
+        pygame.mixer.music.load(random.choice(self.music_files))
+        pygame.mixer.music.play()
 
     def set_music_volume(self, volume):
         pygame.mixer.music.set_volume(volume / 10)

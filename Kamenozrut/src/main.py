@@ -22,8 +22,8 @@ screen = pygame.display.set_mode(FULL_HD_RESOLUTION)
 clock = pygame.time.Clock()
 
 game = Game(620, 300, 30, 4)
-soundManager = SoundManager()
-soundManager.play_music()
+sound_manager = SoundManager()
+sound_manager.play_music()
 
 # TODO should i move these buttons and texts to a different file?
 singleplayer_button = Button(860, 580, 200, 60, "Singleplayer")
@@ -58,7 +58,7 @@ all_colors = [[(65, 211, 189), (186, 50, 79), (255, 186, 73), (255, 169, 231), (
               [(177, 24, 200), (223, 253, 255), (144, 190, 222), (104, 237, 198), (144, 243, 255)]]  # lush lagoon
 
 music_level_value = get_musiclevel()
-soundManager.set_music_volume(music_level_value)
+sound_manager.set_music_volume(music_level_value)
 music_level_value_text = ui_font.render(str(music_level_value), 1, (255, 255, 255))
 music_level_value_rect = music_level_value_text.get_rect(center=(FULL_HD_RESOLUTION[0] // 2,
                                                                  FULL_HD_RESOLUTION[1] // 2 - 310))
@@ -67,7 +67,7 @@ music_level_text = ui_font.render("Music level", 1, (255, 255, 255))
 music_level_rect = music_level_text.get_rect(center=(FULL_HD_RESOLUTION[0] // 2, FULL_HD_RESOLUTION[1] // 2 - 350))
 
 sound_level_value = get_soundlevel()
-soundManager.set_sound_volume(sound_level_value)
+sound_manager.set_sound_volume(sound_level_value)
 sound_level_value_text = ui_font.render(str(sound_level_value), 1, (255, 255, 255))
 sound_level_value_rect = sound_level_value_text.get_rect(center=(FULL_HD_RESOLUTION[0] // 2,
                                                                  FULL_HD_RESOLUTION[1] // 2 - 210))
@@ -132,6 +132,10 @@ while running:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
+        if event.type == sound_manager.MUSIC_END_EVENT:
+            pygame.time.set_timer(sound_manager.MUSIC_DELAY_EVENT, 30000, loops=1)
+        if event.type == sound_manager.MUSIC_DELAY_EVENT:
+            sound_manager.play_music()
         if quit_button.is_clicked(event):
             running = False
         if GAME_STATE == TITLE_SCREEN_STATE:
@@ -160,19 +164,16 @@ while running:
                                     high_score_value = ui_font.render(str(score), 1, (255, 255, 255))
                                 game_over_message = game.is_game_over()
                                 if game_over_message == "You won":
-                                    # TODO i need only to update the score when I win 2 or more in a row
+                                    # No need to write new row in a database if I can just update the existing one
+                                    if not won_any_game:
+                                        set_score(score, CURRENT_GAME_MODE)
+                                    else:
+                                        update_score(score, CURRENT_GAME_MODE)
                                     won_any_game = True
-                                    if CURRENT_GAME_MODE == "Standard":
-                                        set_score(score, CURRENT_GAME_MODE)
-                                    elif CURRENT_GAME_MODE == "ColorMadness":
-                                        set_score(score, CURRENT_GAME_MODE)
                                 elif game_over_message == "No moves left":
                                     if won_any_game:
-                                        set_score(score, CURRENT_GAME_MODE)
-
-                                # TODO need to think about this
+                                        update_score(score, CURRENT_GAME_MODE)
                                 if won_any_game:
-                                    # TODO doesnt work, why?
                                     update_score(score, CURRENT_GAME_MODE)
 
             if back_button.is_clicked(event):
@@ -231,25 +232,25 @@ while running:
             if music_up_button.is_clicked(event):
                 if music_level_value < 10:
                     music_level_value += 1
-                    soundManager.set_music_volume(music_level_value)
+                    sound_manager.set_music_volume(music_level_value)
                     music_level_value_text = ui_font.render(str(music_level_value), 1, (255, 255, 255))
                     set_musiclevel(music_level_value)
             if music_down_button.is_clicked(event):
                 if music_level_value > 0:
                     music_level_value -= 1
-                    soundManager.set_music_volume(music_level_value)
+                    sound_manager.set_music_volume(music_level_value)
                     music_level_value_text = ui_font.render(str(music_level_value), 1, (255, 255, 255))
                     set_musiclevel(music_level_value)
             if sound_up_button.is_clicked(event):
                 if sound_level_value < 10:
                     sound_level_value += 1
-                    soundManager.set_sound_volume(sound_level_value)
+                    sound_manager.set_sound_volume(sound_level_value)
                     sound_level_value_text = ui_font.render(str(sound_level_value), 1, (255, 255, 255))
                     set_soundlevel(sound_level_value)
             if sound_down_button.is_clicked(event):
                 if sound_level_value > 0:
                     sound_level_value -= 1
-                    soundManager.set_sound_volume(sound_level_value)
+                    sound_manager.set_sound_volume(sound_level_value)
                     sound_level_value_text = ui_font.render(str(sound_level_value), 1, (255, 255, 255))
                     set_soundlevel(sound_level_value)
             if color_scheme_1.is_clicked(event):
