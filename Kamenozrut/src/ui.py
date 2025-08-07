@@ -3,7 +3,7 @@ import pygame
 TITLE_FONT_SIZE = 100
 FONT_SIZE = 40
 
-# TODO animation on falling of the stones
+# TODO animation of falling stones
 class Button:
     def __init__(self, x, y, width, height, text, color=(100, 100, 100), hover_color=(200, 200, 200)):
         self.rect = pygame.Rect(x, y, width, height)
@@ -66,36 +66,30 @@ def create_gradient(resolution):
     return gradient
 
 
-def title_letter_separation(resolution, font):
+def create_title(resolution, font):
     title_text = "Kameňožrút"
-    letters = []
     center_x, center_y = resolution[0] // 2, resolution[1] // 4
+    surface = font.render(title_text, True, (255, 255, 255))
+    rect = surface.get_rect(center=(center_x, center_y))
 
-    full_text_surface = font.render(title_text, True, (255, 255, 255))
-    full_text_rect = full_text_surface.get_rect(center=(center_x, center_y))
-    current_x = full_text_rect.left
-    for i, char in enumerate(title_text):
-        char_surface = font.render(char, True, (255, 255, 255))
-        char_width = font.size(char)[0]
-        char_rect = char_surface.get_rect(topleft=(current_x, center_y))
-        letters.append({
-            'surface': char_surface,
-            'rect': char_rect,
-            'speed_x': -1,
-            'speed_y': 1,
-            'delay': 4.0 + i
-        })
-        current_x += char_width
+    title = {
+        'surface': surface,
+        'rect': rect,
+        'speed_x': 1,
+        'speed_y': 1,
+        'delay': 2.0
+    }
 
-    return letters
+    return title
 
 
-def title_animation(resolution, letters, elapsed_time):
-    for letter in letters:
-        if elapsed_time >= letter['delay']:
-            letter['rect'].x += letter['speed_x']
-            letter['rect'].y += letter['speed_y']
-            if letter['rect'].left < 190 or letter['rect'].right > resolution[0] - 190:
-                letter['speed_x'] = -letter['speed_x']
-            if letter['rect'].top < 80 or letter['rect'].bottom > resolution[1] - 80:
-                letter['speed_y'] = -letter['speed_y']
+def animate_title(title, resolution, elapsed_time):
+    if elapsed_time >= title['delay']:
+        rect = title['rect']
+        rect.x += title['speed_x']
+        rect.y += title['speed_y']
+
+        if rect.left < 190 or rect.right > resolution[0] - 190:
+            title['speed_x'] = -title['speed_x']
+        if rect.top < 90 or rect.bottom > resolution[1] - 80:
+            title['speed_y'] = -title['speed_y']

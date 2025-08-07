@@ -1,6 +1,6 @@
 import pygame
 from game import Game, add_score
-from ui import Button, create_gradient, title_letter_separation, title_animation, FONT_SIZE, TITLE_FONT_SIZE
+from ui import (Button, create_gradient, animate_title, create_title, FONT_SIZE, TITLE_FONT_SIZE)
 from sound import SoundManager
 from db import (set_score, get_max_score, set_musiclevel, get_musiclevel, set_soundlevel, get_soundlevel,
                 set_colorscheme, get_colorscheme, update_score)
@@ -119,7 +119,7 @@ game_over_message = ""
 lose_text = title_font.render("You LOST!", 1, (255, 255, 255))
 lose_text_rect = win_text.get_rect(center=(FULL_HD_RESOLUTION[0] // 2, FULL_HD_RESOLUTION[1] // 2))
 
-letters = title_letter_separation(FULL_HD_RESOLUTION, title_font)
+title = create_title(FULL_HD_RESOLUTION, title_font)
 
 background = create_gradient(FULL_HD_RESOLUTION)
 running = True
@@ -336,9 +336,8 @@ while running:
     # No need of pygame events
     if GAME_STATE == TITLE_SCREEN_STATE:
         # TODO I dont like when letters are separated, the symmetry goes away very quickly
-        title_animation(FULL_HD_RESOLUTION, letters, elapsed_time)
-        for letter in letters:
-            screen.blit(letter['surface'], letter['rect'])
+        animate_title(title, FULL_HD_RESOLUTION, elapsed_time)
+        screen.blit(title['surface'], title['rect'])
         singleplayer_button.draw(screen)
         multiplayer_button.draw(screen)
         options_button.draw(screen)
