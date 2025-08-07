@@ -5,7 +5,6 @@ from sound import SoundManager
 from db import (set_score, get_max_score, set_musiclevel, get_musiclevel, set_soundlevel, get_soundlevel,
                 set_colorscheme, get_colorscheme, update_score)
 
-
 FULL_HD_RESOLUTION = (1920, 1080)
 TITLE_SCREEN_STATE = 1
 SINGLEPLAYER_SCREEN_STATE = 2
@@ -132,22 +131,27 @@ while running:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
-        if event.type == sound_manager.MUSIC_END_EVENT:
-            pygame.time.set_timer(sound_manager.MUSIC_DELAY_EVENT, 30000, loops=1)
-        if event.type == sound_manager.MUSIC_DELAY_EVENT:
-            sound_manager.play_music()
+        # if event.type == sound_manager.MUSIC_END_EVENT:
+        #     pygame.time.set_timer(sound_manager.MUSIC_DELAY_EVENT, 30000, loops=1)
+        # if event.type == sound_manager.MUSIC_DELAY_EVENT:
+        #     sound_manager.play_music()
         if quit_button.is_clicked(event):
+            sound_manager.play_sound("click")
             running = False
         if GAME_STATE == TITLE_SCREEN_STATE:
             if singleplayer_button.is_clicked(event):
                 GAME_STATE = SINGLEPLAYER_MODE_SELECTION_STATE
+                sound_manager.play_sound("click")
             if multiplayer_button.is_clicked(event):
                 GAME_STATE = MULTIPLAYER_SCREEN_STATE
+                sound_manager.play_sound("click")
             if options_button.is_clicked(event):
                 color_scheme_grid = game.initialize_color_scheme_squares(all_colors)
                 GAME_STATE = OPTIONS_SCREEN_STATE
+                sound_manager.play_sound("click")
             if tutorial_button.is_clicked(event):
                 GAME_STATE = TUTORIAL_SCREEN_STATE
+                sound_manager.play_sound("click")
 
         elif GAME_STATE == SINGLEPLAYER_SCREEN_STATE:
             pos = pygame.mouse.get_pos()
@@ -160,10 +164,13 @@ while running:
                                 connected_squares_len = game.handle_move(i, j, color)
                                 score += add_score(connected_squares_len)
                                 score_value = ui_font.render(str(score), 1, (255, 255, 255))
+                                sound_manager.play_sound("block")
                                 if score > high_score:
                                     high_score_value = ui_font.render(str(score), 1, (255, 255, 255))
                                 game_over_message = game.is_game_over()
                                 if game_over_message == "You won":
+                                    sound_manager.stop_music()
+                                    sound_manager.play_sound("cheer")
                                     # No need to write new row in a database if I can just update the existing one
                                     if not won_any_game:
                                         set_score(score, CURRENT_GAME_MODE)
@@ -171,8 +178,12 @@ while running:
                                         update_score(score, CURRENT_GAME_MODE)
                                     won_any_game = True
                                 elif game_over_message == "No moves left":
+                                    sound_manager.stop_music()
                                     if won_any_game:
                                         update_score(score, CURRENT_GAME_MODE)
+                                        sound_manager.play_sound("cheer")
+                                    else:
+                                        sound_manager.play_sound("laugh")
                                 if won_any_game:
                                     update_score(score, CURRENT_GAME_MODE)
 
@@ -181,9 +192,13 @@ while running:
                 game = Game(620, 300, 30, 4)
                 default_scheme = get_colorscheme()
                 CURRENT_GAME_MODE = ""
+                game_over_message = ""
                 score = 0
                 score_value = ui_font.render(str(score), 1, (255, 255, 255))
                 won_any_game = False
+                sound_manager.play_sound("click")
+                if not pygame.mixer.music.get_busy():
+                    sound_manager.play_music()
             if game_over_message == "You won" and new_game_button.is_clicked(event):
                 game_over_message = ""
                 game = Game(620, 300, 30, 4)
@@ -194,6 +209,8 @@ while running:
                 else:
                     game.colors = all_colors[default_scheme]
                 game.initialize_grid()
+                sound_manager.play_sound("click")
+                sound_manager.play_music()
             elif game_over_message == "No moves left" and new_game_button.is_clicked(event):
                 game_over_message = ""
                 game = Game(620, 300, 30, 4)
@@ -207,6 +224,8 @@ while running:
                 score = 0
                 score_value = ui_font.render(str(score), 1, (255, 255, 255))
                 won_any_game = False
+                sound_manager.play_sound("click")
+                sound_manager.play_music()
         elif GAME_STATE == SINGLEPLAYER_MODE_SELECTION_STATE:
             if standard_singleplayer_mode_button.is_clicked(event):
                 game.colors = all_colors[default_scheme][:4]
@@ -215,6 +234,7 @@ while running:
                 CURRENT_GAME_MODE = "Standard"
                 high_score = get_max_score(CURRENT_GAME_MODE)
                 high_score_value = ui_font.render(str(high_score), 1, (255, 255, 255))
+                sound_manager.play_sound("click")
             if color_madness_singleplayer_mode_button.is_clicked(event):
                 game.colors = all_colors[default_scheme]
                 game.initialize_grid()
@@ -222,11 +242,14 @@ while running:
                 CURRENT_GAME_MODE = "ColorMadness"
                 high_score = get_max_score(CURRENT_GAME_MODE)
                 high_score_value = ui_font.render(str(high_score), 1, (255, 255, 255))
+                sound_manager.play_sound("click")
             if back_button.is_clicked(event):
                 GAME_STATE = TITLE_SCREEN_STATE
+                sound_manager.play_sound("click")
         elif GAME_STATE == MULTIPLAYER_SCREEN_STATE:
             if back_button.is_clicked(event):
                 GAME_STATE = TITLE_SCREEN_STATE
+                sound_manager.play_sound("click")
         # TODO need to add options also on escape key
         elif GAME_STATE == OPTIONS_SCREEN_STATE:
             if music_up_button.is_clicked(event):
@@ -235,43 +258,55 @@ while running:
                     sound_manager.set_music_volume(music_level_value)
                     music_level_value_text = ui_font.render(str(music_level_value), 1, (255, 255, 255))
                     set_musiclevel(music_level_value)
+                sound_manager.play_sound("click")
             if music_down_button.is_clicked(event):
                 if music_level_value > 0:
                     music_level_value -= 1
                     sound_manager.set_music_volume(music_level_value)
                     music_level_value_text = ui_font.render(str(music_level_value), 1, (255, 255, 255))
                     set_musiclevel(music_level_value)
+                sound_manager.play_sound("click")
             if sound_up_button.is_clicked(event):
                 if sound_level_value < 10:
                     sound_level_value += 1
                     sound_manager.set_sound_volume(sound_level_value)
                     sound_level_value_text = ui_font.render(str(sound_level_value), 1, (255, 255, 255))
                     set_soundlevel(sound_level_value)
+                sound_manager.play_sound("click")
             if sound_down_button.is_clicked(event):
                 if sound_level_value > 0:
                     sound_level_value -= 1
                     sound_manager.set_sound_volume(sound_level_value)
                     sound_level_value_text = ui_font.render(str(sound_level_value), 1, (255, 255, 255))
                     set_soundlevel(sound_level_value)
+                sound_manager.play_sound("click")
             if color_scheme_1.is_clicked(event):
                 default_scheme = 0
                 set_colorscheme(default_scheme)
+                sound_manager.play_sound("click")
             if color_scheme_2.is_clicked(event):
                 default_scheme = 1
                 set_colorscheme(default_scheme)
+                sound_manager.play_sound("click")
             if color_scheme_3.is_clicked(event):
                 default_scheme = 2
                 set_colorscheme(default_scheme)
+                sound_manager.play_sound("click")
             if color_scheme_4.is_clicked(event):
                 default_scheme = 3
                 set_colorscheme(default_scheme)
+                sound_manager.play_sound("click")
             if back_button.is_clicked(event):
                 GAME_STATE = TITLE_SCREEN_STATE
+                sound_manager.play_sound("click")
         elif GAME_STATE == TUTORIAL_SCREEN_STATE:
             if back_button.is_clicked(event):
                 GAME_STATE = TITLE_SCREEN_STATE
+                sound_manager.play_sound("click")
 
+    # No need of pygame events
     if GAME_STATE == TITLE_SCREEN_STATE:
+        # TODO I dont like when letters are separated, the symmetry goes away very quickly
         title_animation(FULL_HD_RESOLUTION, letters, elapsed_time)
         for letter in letters:
             screen.blit(letter['surface'], letter['rect'])
