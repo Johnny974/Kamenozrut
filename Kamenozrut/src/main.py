@@ -13,6 +13,8 @@ OPTIONS_SCREEN_STATE = 4
 TUTORIAL_SCREEN_STATE = 5
 SINGLEPLAYER_MODE_SELECTION_STATE = 6
 GAME_STATE = TITLE_SCREEN_STATE
+
+PREVIOUS_GAME_STATE = 0
 CURRENT_GAME_MODE = ""
 flags = pygame.RESIZABLE
 
@@ -127,7 +129,6 @@ while running:
     elapsed_time += delta_time
 
     screen.blit(background, (0, 0))
-    # TODO is it possible to make this code more readable?
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
@@ -138,19 +139,32 @@ while running:
         if quit_button.is_clicked(event):
             sound_manager.play_sound("click")
             running = False
+        if event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_ESCAPE:
+                if GAME_STATE == SINGLEPLAYER_SCREEN_STATE:
+                    color_scheme_grid = game.initialize_color_scheme_squares(all_colors)
+                    GAME_STATE = OPTIONS_SCREEN_STATE
+                    PREVIOUS_GAME_STATE = SINGLEPLAYER_SCREEN_STATE
+                # TODO if i change color palette in game, i need to switch it also on the board
+                elif GAME_STATE == OPTIONS_SCREEN_STATE:
+                    GAME_STATE = SINGLEPLAYER_SCREEN_STATE
         if GAME_STATE == TITLE_SCREEN_STATE:
             if singleplayer_button.is_clicked(event):
                 GAME_STATE = SINGLEPLAYER_MODE_SELECTION_STATE
+                PREVIOUS_GAME_STATE = TITLE_SCREEN_STATE
                 sound_manager.play_sound("click")
             if multiplayer_button.is_clicked(event):
                 GAME_STATE = MULTIPLAYER_SCREEN_STATE
+                PREVIOUS_GAME_STATE = TITLE_SCREEN_STATE
                 sound_manager.play_sound("click")
             if options_button.is_clicked(event):
                 color_scheme_grid = game.initialize_color_scheme_squares(all_colors)
                 GAME_STATE = OPTIONS_SCREEN_STATE
+                PREVIOUS_GAME_STATE = TITLE_SCREEN_STATE
                 sound_manager.play_sound("click")
             if tutorial_button.is_clicked(event):
                 GAME_STATE = TUTORIAL_SCREEN_STATE
+                PREVIOUS_GAME_STATE = TITLE_SCREEN_STATE
                 sound_manager.play_sound("click")
 
         elif GAME_STATE == SINGLEPLAYER_SCREEN_STATE:
@@ -199,6 +213,7 @@ while running:
                 sound_manager.play_sound("click")
                 if not pygame.mixer.music.get_busy():
                     sound_manager.play_music()
+                PREVIOUS_GAME_STATE = TITLE_SCREEN_STATE
             if game_over_message == "You won" and new_game_button.is_clicked(event):
                 game_over_message = ""
                 game = Game(620, 300, 30, 4)
@@ -231,6 +246,7 @@ while running:
                 game.colors = all_colors[default_scheme][:4]
                 game.initialize_grid()
                 GAME_STATE = SINGLEPLAYER_SCREEN_STATE
+                PREVIOUS_GAME_STATE = SINGLEPLAYER_SCREEN_STATE
                 CURRENT_GAME_MODE = "Standard"
                 high_score = get_max_score(CURRENT_GAME_MODE)
                 high_score_value = ui_font.render(str(high_score), 1, (255, 255, 255))
@@ -239,16 +255,19 @@ while running:
                 game.colors = all_colors[default_scheme]
                 game.initialize_grid()
                 GAME_STATE = SINGLEPLAYER_SCREEN_STATE
+                PREVIOUS_GAME_STATE = SINGLEPLAYER_SCREEN_STATE
                 CURRENT_GAME_MODE = "ColorMadness"
                 high_score = get_max_score(CURRENT_GAME_MODE)
                 high_score_value = ui_font.render(str(high_score), 1, (255, 255, 255))
                 sound_manager.play_sound("click")
             if back_button.is_clicked(event):
                 GAME_STATE = TITLE_SCREEN_STATE
+                PREVIOUS_GAME_STATE = TITLE_SCREEN_STATE
                 sound_manager.play_sound("click")
         elif GAME_STATE == MULTIPLAYER_SCREEN_STATE:
             if back_button.is_clicked(event):
                 GAME_STATE = TITLE_SCREEN_STATE
+                PREVIOUS_GAME_STATE = TITLE_SCREEN_STATE
                 sound_manager.play_sound("click")
         # TODO need to add options also on escape key
         elif GAME_STATE == OPTIONS_SCREEN_STATE:
@@ -281,27 +300,37 @@ while running:
                     set_soundlevel(sound_level_value)
                 sound_manager.play_sound("click")
             if color_scheme_1.is_clicked(event):
+                if PREVIOUS_GAME_STATE == SINGLEPLAYER_SCREEN_STATE:
+                    game.swap_color_palette(all_colors[default_scheme], all_colors[0])
                 default_scheme = 0
                 set_colorscheme(default_scheme)
                 sound_manager.play_sound("click")
             if color_scheme_2.is_clicked(event):
+                if PREVIOUS_GAME_STATE == SINGLEPLAYER_SCREEN_STATE:
+                    game.swap_color_palette(all_colors[default_scheme], all_colors[1])
                 default_scheme = 1
                 set_colorscheme(default_scheme)
                 sound_manager.play_sound("click")
             if color_scheme_3.is_clicked(event):
+                if PREVIOUS_GAME_STATE == SINGLEPLAYER_SCREEN_STATE:
+                    game.swap_color_palette(all_colors[default_scheme], all_colors[2])
                 default_scheme = 2
                 set_colorscheme(default_scheme)
                 sound_manager.play_sound("click")
             if color_scheme_4.is_clicked(event):
+                if PREVIOUS_GAME_STATE == SINGLEPLAYER_SCREEN_STATE:
+                    game.swap_color_palette(all_colors[default_scheme], all_colors[3])
                 default_scheme = 3
                 set_colorscheme(default_scheme)
                 sound_manager.play_sound("click")
             if back_button.is_clicked(event):
                 GAME_STATE = TITLE_SCREEN_STATE
+                PREVIOUS_GAME_STATE = TITLE_SCREEN_STATE
                 sound_manager.play_sound("click")
         elif GAME_STATE == TUTORIAL_SCREEN_STATE:
             if back_button.is_clicked(event):
                 GAME_STATE = TITLE_SCREEN_STATE
+                PREVIOUS_GAME_STATE = TITLE_SCREEN_STATE
                 sound_manager.play_sound("click")
 
     # No need of pygame events

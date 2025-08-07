@@ -58,6 +58,14 @@ class Game:
             color_scheme_grid.append(row)
         return color_scheme_grid
 
+    def swap_color_palette(self, old_palette, new_palette):
+        for i in range(self.grid_height):
+            for j in range(self.grid_width):
+                if self.grid[i][j] is not None:
+                    rect, color = self.grid[i][j]
+                    index = old_palette.index(color)
+                    self.grid[i][j] = (rect, new_palette[index])
+
     def find_connected_squares(self, start_row, start_col, color):
         to_check = [(start_row, start_col)]
         connected = set()
