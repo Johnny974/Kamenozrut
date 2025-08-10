@@ -193,11 +193,9 @@ while running:
                                     won_any_game = True
                                 elif game_over_message == "No moves left":
                                     sound_manager.stop_music()
+                                    sound_manager.play_sound("laugh")
                                     if won_any_game:
                                         update_score(score, CURRENT_GAME_MODE)
-                                        sound_manager.play_sound("cheer")
-                                    else:
-                                        sound_manager.play_sound("laugh")
                                 if won_any_game:
                                     update_score(score, CURRENT_GAME_MODE)
 

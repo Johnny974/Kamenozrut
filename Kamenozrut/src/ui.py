@@ -1,4 +1,5 @@
 import pygame
+import random
 
 TITLE_FONT_SIZE = 100
 FONT_SIZE = 40
