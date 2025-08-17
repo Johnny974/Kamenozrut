@@ -4,6 +4,7 @@ from ui import (Button, create_gradient, animate_title, create_title, FONT_SIZE,
 from sound import SoundManager
 from db import (set_score, get_max_score, set_musiclevel, get_musiclevel, set_soundlevel, get_soundlevel,
                 set_colorscheme, get_colorscheme, update_score)
+from client import check_internet_connection, connect_to_server
 
 FULL_HD_RESOLUTION = (1920, 1080)
 TITLE_SCREEN_STATE = 1
@@ -25,6 +26,7 @@ clock = pygame.time.Clock()
 game = Game(620, 300, 30, 4)
 sound_manager = SoundManager()
 sound_manager.play_music()
+
 
 # TODO should i move these buttons and texts to a different file?
 singleplayer_button = Button(860, 580, 200, 60, "Singleplayer")
@@ -118,6 +120,15 @@ game_over_message = ""
 
 lose_text = title_font.render("You LOST!", 1, (255, 255, 255))
 lose_text_rect = win_text.get_rect(center=(FULL_HD_RESOLUTION[0] // 2, FULL_HD_RESOLUTION[1] // 2))
+
+
+enter_nickname_text = ui_font.render("Enter your nickname:", 1, (255, 255, 255))
+enter_nickname_text_rect = enter_nickname_text.get_rect(center=(FULL_HD_RESOLUTION[0] // 2, FULL_HD_RESOLUTION[1] // 2))
+multiplayer_nickname = ""
+multiplayer_nickname_text_box = pygame.Rect(enter_nickname_text_rect.right + 10,
+                                            FULL_HD_RESOLUTION[1] // 2 - 20, 100, 50)
+active_nickname_text_box = False
+
 
 title = create_title(FULL_HD_RESOLUTION, title_font)
 
@@ -262,7 +273,26 @@ while running:
                 GAME_STATE = TITLE_SCREEN_STATE
                 PREVIOUS_GAME_STATE = TITLE_SCREEN_STATE
                 sound_manager.play_sound("click")
+        # TODO: it seems that client tries to connect to the server more than once
+        # TODO: need to set max_length of nickname
+        # TODO: multiplayer menu needs to show after nickname is registered in the server database
         elif GAME_STATE == MULTIPLAYER_SCREEN_STATE:
+            if check_internet_connection("www.google.com", 3):
+                print("Connected to the internet")
+                if event.type == pygame.MOUSEBUTTONDOWN:
+                    if multiplayer_nickname_text_box.collidepoint(event.pos):
+                        active_nickname_text_box = True
+                    else:
+                        active_nickname_text_box = False
+                if event.type == pygame.KEYDOWN:
+                    if active_nickname_text_box:
+                        if event.key == pygame.K_BACKSPACE:
+                            multiplayer_nickname = multiplayer_nickname[:-1]
+                        else:
+                            multiplayer_nickname += event.unicode
+                sock = connect_to_server()
+                if not sock:
+                    print("Couldnt connect to the server")
             if back_button.is_clicked(event):
                 GAME_STATE = TITLE_SCREEN_STATE
                 PREVIOUS_GAME_STATE = TITLE_SCREEN_STATE
@@ -368,6 +398,15 @@ while running:
         color_madness_singleplayer_mode_button.draw(screen)
         back_button.draw(screen)
     elif GAME_STATE == MULTIPLAYER_SCREEN_STATE:
+        screen.blit(enter_nickname_text, enter_nickname_text_rect)
+        if active_nickname_text_box:
+            nickname_text_box_color = pygame.Color((0, 0, 0))
+        else:
+            nickname_text_box_color = pygame.Color((255, 255, 255))
+        pygame.draw.rect(screen, nickname_text_box_color, multiplayer_nickname_text_box, 4)
+        multiplayer_nickname_surface = ui_font.render(multiplayer_nickname, True, (255, 255, 255))
+        screen.blit(multiplayer_nickname_surface, (multiplayer_nickname_text_box.x + 5, multiplayer_nickname_text_box.y + 5))
+        multiplayer_nickname_text_box.w = max(100, multiplayer_nickname_surface.get_width() + 10)
         back_button.draw(screen)
     elif GAME_STATE == OPTIONS_SCREEN_STATE:
         screen.blit(music_level_text, music_level_rect)

@@ -26,26 +26,25 @@ def receive_messages(sock):
                 print("Connection closed.")
                 break
             print(f"[SERVER]: {msg.decode()}")
-        except:
-            print("Error receiving data from server.")
+        except Exception as e:
+            print(f"Error receiving data from server.{e}")
             break
 
-
+# TODO Error handling
 def connect_to_server():
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    sock.connect((HOST, PORT))
+    try:
+        sock.connect((HOST, PORT))
+    except ConnectionRefusedError:
+        print("Server is not running.")
+        return
     print("Connected to server.")
 
     Thread(target=receive_messages, args=(sock,), daemon=True).start()
 
-    while True:
-        msg = input()
-        if msg.lower() == "exit":
-            break
-        sock.send(msg.encode())
+    return sock
 
-    sock.close()
+# TODO: send function method and think about data format
 
-
-if check_internet_connection("www.google.com", 3):
-    connect_to_server()
+# if check_internet_connection("www.google.com", 3):
+#     connect_to_server()
