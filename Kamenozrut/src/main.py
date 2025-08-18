@@ -274,9 +274,9 @@ while running:
                 PREVIOUS_GAME_STATE = TITLE_SCREEN_STATE
                 sound_manager.play_sound("click")
         # TODO: it seems that client tries to connect to the server more than once
-        # TODO: need to set max_length of nickname
         # TODO: multiplayer menu needs to show after nickname is registered in the server database
         elif GAME_STATE == MULTIPLAYER_SCREEN_STATE:
+            # TODO: here it checks again and again
             if check_internet_connection("www.google.com", 3):
                 print("Connected to the internet")
                 if event.type == pygame.MOUSEBUTTONDOWN:
@@ -284,12 +284,17 @@ while running:
                         active_nickname_text_box = True
                     else:
                         active_nickname_text_box = False
-                if event.type == pygame.KEYDOWN:
+                elif event.type == pygame.KEYDOWN:
                     if active_nickname_text_box:
                         if event.key == pygame.K_BACKSPACE:
                             multiplayer_nickname = multiplayer_nickname[:-1]
+                        elif len(multiplayer_nickname) > 15:
+                            print("Sorry, too long nickname")
                         else:
                             multiplayer_nickname += event.unicode
+                elif event.type == pygame.K_RETURN:
+                    # TODO send nickname to server db and get a response
+                    pass
                 sock = connect_to_server()
                 if not sock:
                     print("Couldnt connect to the server")
@@ -297,7 +302,6 @@ while running:
                 GAME_STATE = TITLE_SCREEN_STATE
                 PREVIOUS_GAME_STATE = TITLE_SCREEN_STATE
                 sound_manager.play_sound("click")
-        # TODO need to add options also on escape key
         elif GAME_STATE == OPTIONS_SCREEN_STATE:
             if music_up_button.is_clicked(event):
                 if music_level_value < 10:
@@ -363,7 +367,6 @@ while running:
 
     # No need of pygame events
     if GAME_STATE == TITLE_SCREEN_STATE:
-        # TODO I dont like when letters are separated, the symmetry goes away very quickly
         animate_title(title, FULL_HD_RESOLUTION, elapsed_time)
         screen.blit(title['surface'], title['rect'])
         singleplayer_button.draw(screen)
@@ -405,7 +408,7 @@ while running:
             nickname_text_box_color = pygame.Color((255, 255, 255))
         pygame.draw.rect(screen, nickname_text_box_color, multiplayer_nickname_text_box, 4)
         multiplayer_nickname_surface = ui_font.render(multiplayer_nickname, True, (255, 255, 255))
-        screen.blit(multiplayer_nickname_surface, (multiplayer_nickname_text_box.x + 5, multiplayer_nickname_text_box.y + 5))
+        screen.blit(multiplayer_nickname_surface, (multiplayer_nickname_text_box.x + 5, multiplayer_nickname_text_box.y))
         multiplayer_nickname_text_box.w = max(100, multiplayer_nickname_surface.get_width() + 10)
         back_button.draw(screen)
     elif GAME_STATE == OPTIONS_SCREEN_STATE:
