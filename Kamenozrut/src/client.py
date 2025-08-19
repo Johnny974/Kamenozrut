@@ -1,6 +1,7 @@
 import socket
 from threading import Thread
 import http.client as httplib
+import re
 
 HOST = "127.0.0.1"
 PORT = 5555
@@ -30,6 +31,7 @@ def receive_messages(sock):
             print(f"Error receiving data from server.{e}")
             break
 
+
 # TODO Error handling
 def connect_to_server():
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -46,5 +48,12 @@ def connect_to_server():
 
 # TODO: send function method and think about data format
 
+
+# TODO: use this func
+def is_valid_nickname(nickname):
+    if nickname is None or len(nickname) == 0:
+        return "Nickname is required."
+    elif not re.match(r"^[A-Za-z0-9_]{1,15}$", nickname):
+        return "Nickname can only contain letters, numbers and underscores."
 # if check_internet_connection("www.google.com", 3):
 #     connect_to_server()

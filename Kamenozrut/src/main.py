@@ -4,7 +4,7 @@ from ui import (Button, create_gradient, animate_title, create_title, FONT_SIZE,
 from sound import SoundManager
 from db import (set_score, get_max_score, set_musiclevel, get_musiclevel, set_soundlevel, get_soundlevel,
                 set_colorscheme, get_colorscheme, update_score)
-from client import check_internet_connection, connect_to_server
+from client import check_internet_connection, connect_to_server, is_valid_nickname
 
 FULL_HD_RESOLUTION = (1920, 1080)
 TITLE_SCREEN_STATE = 1
@@ -292,9 +292,13 @@ while running:
                             print("Sorry, too long nickname")
                         else:
                             multiplayer_nickname += event.unicode
+                # TODO: maybe a button is better here?
                 elif event.type == pygame.K_RETURN:
-                    # TODO send nickname to server db and get a response
-                    pass
+                    if is_valid_nickname(multiplayer_nickname):
+                        pass
+                        # TODO send nickname to server db and get a response
+                    else:
+                        print("Change your nickname.")
                 sock = connect_to_server()
                 if not sock:
                     print("Couldnt connect to the server")
