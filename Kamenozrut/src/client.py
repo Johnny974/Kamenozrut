@@ -6,6 +6,7 @@ import json
 
 HOST = "127.0.0.1"
 PORT = 5555
+callback_on_message = None
 
 
 def check_internet_connection(url, timeout):
@@ -20,7 +21,9 @@ def check_internet_connection(url, timeout):
 
 
 # TODO Error handling
-def connect_to_server():
+def connect_to_server(on_message=None):
+    global callback_on_message
+    callback_on_message = on_message
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     try:
         sock.connect((HOST, PORT))
@@ -69,21 +72,27 @@ def handle_server_message(message):
     msg_type = message.get("type")
 
     if msg_type == "NICKNAME_OK":
-        print("Nickname accepted, you are now online!")
+        # multiplayer_error = "Nickname accepted, you are now online!"
+        if callback_on_message:
+            callback_on_message("Nickname accepted, you are now online!")
     elif msg_type == "NICKNAME_TAKEN":
-        print("Nickname already taken, choose another one.")
+        # multiplayer_error = "Nickname already taken, choose another one."
+        if callback_on_message:
+            callback_on_message("Nickname already taken, choose another one.")
     elif msg_type == "NICKNAME_INVALID":
-        print("Invalid nickname format.")
+        # multiplayer_error = "Invalid nickname format."
+        if callback_on_message:
+            callback_on_message("Invalid nickname format.")
     elif msg_type == "MATCH_FOUND":
-        print(f"Match found: {message.get('opponent')}")
+        pass
     else:
-        print(f"ℹ️ Unknown message from server: {message}")
+        pass
 
 
 def is_valid_nickname(nickname):
     if nickname is None or len(nickname) == 0:
         return "Nickname is required."
     elif not re.match(r"^[A-Za-z0-9_]{1,15}$", nickname):
-        return "Nickname can only contain letters, numbers and underscores."
+        return "Nickname can only contain letters without diacritics, numbers and underscores."
     else:
         return True

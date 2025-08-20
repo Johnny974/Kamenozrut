@@ -1,10 +1,10 @@
 import pygame
 from game import Game, add_score
-from ui import (Button, create_gradient, animate_title, create_title, FONT_SIZE, TITLE_FONT_SIZE)
+from ui import (Button, create_gradient, animate_title, create_title, FONT_SIZE, TITLE_FONT_SIZE, SMALL_FONT_SIZE)
 from sound import SoundManager
 from db import (set_score, get_max_score, set_musiclevel, get_musiclevel, set_soundlevel, get_soundlevel,
                 set_colorscheme, get_colorscheme, update_score)
-from client import check_internet_connection, connect_to_server,send_message, is_valid_nickname
+from client import check_internet_connection, connect_to_server, send_message, is_valid_nickname
 
 FULL_HD_RESOLUTION = (1920, 1080)
 TITLE_SCREEN_STATE = 1
@@ -48,12 +48,13 @@ color_scheme_3 = Button(670, 680, 200, 60, "Boring Brick")
 color_scheme_4 = Button(1050, 680, 200, 60, "Lush Lagoon")
 
 new_game_button = Button(860, 120, 200, 60, "New game")
-join_lobby_button = Button(860, 120, 200, 60, "Join the lobby")
+join_lobby_button = Button(860, 570, 200, 60, "Join the lobby")
 
 pygame.display.set_caption("Kameňožrút")
 icon = pygame.image.load("../assets/images/rocks.png")
 title_font = pygame.font.Font("../assets/fonts/Audiowide-Regular.ttf", TITLE_FONT_SIZE)
 ui_font = pygame.font.Font("../assets/fonts/Audiowide-Regular.ttf", FONT_SIZE)
+small_ui_font = pygame.font.Font("../assets/fonts/Audiowide-Regular.ttf", SMALL_FONT_SIZE)
 pygame.display.set_icon(icon)
 
 all_colors = [[(65, 211, 189), (186, 50, 79), (255, 186, 73), (255, 169, 231), (254, 225, 199)],  # color chaos
@@ -130,8 +131,19 @@ multiplayer_nickname_text_box = pygame.Rect(enter_nickname_text_rect.right + 10,
                                             FULL_HD_RESOLUTION[1] // 2 - 20, 100, 50)
 active_nickname_text_box = False
 
+multiplayer_error = "Connecting to the server..."
+multiplayer_error_text = small_ui_font.render(multiplayer_error, 1, (255, 255, 255))
+multiplayer_error_text_rect = multiplayer_error_text.get_rect(topleft=(200, 940))
+
 
 title = create_title(FULL_HD_RESOLUTION, title_font)
+
+
+def show_error(message):
+    global multiplayer_error, multiplayer_error_text
+    multiplayer_error = message
+    multiplayer_error_text = small_ui_font.render(multiplayer_error, True, (255, 255, 255))
+
 
 background = create_gradient(FULL_HD_RESOLUTION)
 running = True
@@ -183,12 +195,18 @@ while running:
                 PREVIOUS_GAME_STATE = TITLE_SCREEN_STATE
                 sound_manager.play_sound("click")
                 if check_internet_connection("www.google.com", 3):
-                    print("Connected to the internet")
-                    sock = connect_to_server()
+                    multiplayer_error = "Connected to the internet. Connecting to the server..."
+                    multiplayer_error_text = small_ui_font.render(multiplayer_error, 1, (255, 255, 255))
+                    sock = connect_to_server(on_message=show_error)
                     if not sock:
-                        print("Couldnt connect to the server")
+                        multiplayer_error = "Couldnt connect to the server. Please try again later."
+                        multiplayer_error_text = small_ui_font.render(multiplayer_error, 1, (255, 255, 255))
+                    else:
+                        multiplayer_error = "Successfully connected to the server."
+                        multiplayer_error_text = small_ui_font.render(multiplayer_error, 1, (255, 255, 255))
                 else:
-                    print("Your device is offline. Please connect to the internet.")
+                    multiplayer_error = "Your device is offline. Please connect to the internet."
+                    multiplayer_error_text = small_ui_font.render(multiplayer_error, 1, (255, 255, 255))
 
             if options_button.is_clicked(event):
                 color_scheme_grid = game.initialize_color_scheme_squares(all_colors)
@@ -295,21 +313,26 @@ while running:
                 GAME_STATE = TITLE_SCREEN_STATE
                 PREVIOUS_GAME_STATE = TITLE_SCREEN_STATE
                 sound_manager.play_sound("click")
-        # TODO: it seems that client tries to connect to the server more than once
         # TODO: multiplayer menu needs to show after nickname is registered in the server database
         elif GAME_STATE == MULTIPLAYER_SCREEN_STATE:
             if join_lobby_button.is_clicked(event):
-                if is_valid_nickname(multiplayer_nickname):
+                validation_result = is_valid_nickname(multiplayer_nickname)
+                if validation_result is True:
                     if sock:
                         send_message(sock, "CHECK_NICKNAME", {"nickname": multiplayer_nickname})
-                    # TODO send nickname to server db and get a response
+                    else:
+                        multiplayer_error = "Can't connect to the server. Please try again later."
+                        multiplayer_error_text = small_ui_font.render(multiplayer_error, 1, (255, 255, 255))
                 else:
-                    print("Change your nickname.")
+                    multiplayer_error = validation_result
+                    multiplayer_error_text = small_ui_font.render(multiplayer_error, 1, (255, 255, 255))
 
             if back_button.is_clicked(event):
                 GAME_STATE = TITLE_SCREEN_STATE
                 PREVIOUS_GAME_STATE = TITLE_SCREEN_STATE
                 sound_manager.play_sound("click")
+                multiplayer_error = "Connecting to the server..."
+                multiplayer_error_text = small_ui_font.render(multiplayer_error, 1, (255, 255, 255))
         elif GAME_STATE == OPTIONS_SCREEN_STATE:
             if music_up_button.is_clicked(event):
                 if music_level_value < 10:
@@ -410,11 +433,12 @@ while running:
         back_button.draw(screen)
     elif GAME_STATE == MULTIPLAYER_SCREEN_STATE:
         screen.blit(enter_nickname_text, enter_nickname_text_rect)
+        screen.blit(multiplayer_error_text, multiplayer_error_text_rect)
         if active_nickname_text_box:
             nickname_text_box_color = pygame.Color((0, 0, 0))
         else:
             nickname_text_box_color = pygame.Color((255, 255, 255))
-        pygame.draw.rect(screen, nickname_text_box_color, multiplayer_nickname_text_box, 4)
+        pygame.draw.rect(screen, nickname_text_box_color, multiplayer_nickname_text_box, 1)
         multiplayer_nickname_surface = ui_font.render(multiplayer_nickname, True, (255, 255, 255))
         screen.blit(multiplayer_nickname_surface, (multiplayer_nickname_text_box.x + 5, multiplayer_nickname_text_box.y))
         multiplayer_nickname_text_box.w = max(100, multiplayer_nickname_surface.get_width() + 10)
