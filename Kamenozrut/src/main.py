@@ -4,7 +4,7 @@ from ui import (Button, create_gradient, animate_title, create_title, FONT_SIZE,
 from sound import SoundManager
 from db import (set_score, get_max_score, set_musiclevel, get_musiclevel, set_soundlevel, get_soundlevel,
                 set_colorscheme, get_colorscheme, update_score)
-from client import check_internet_connection, connect_to_server, is_valid_nickname
+from client import check_internet_connection, connect_to_server,send_message, is_valid_nickname
 
 FULL_HD_RESOLUTION = (1920, 1080)
 TITLE_SCREEN_STATE = 1
@@ -48,6 +48,7 @@ color_scheme_3 = Button(670, 680, 200, 60, "Boring Brick")
 color_scheme_4 = Button(1050, 680, 200, 60, "Lush Lagoon")
 
 new_game_button = Button(860, 120, 200, 60, "New game")
+join_lobby_button = Button(860, 120, 200, 60, "Join the lobby")
 
 pygame.display.set_caption("Kameňožrút")
 icon = pygame.image.load("../assets/images/rocks.png")
@@ -159,6 +160,19 @@ while running:
                 # TODO if i change color palette in game, i need to switch it also on the board
                 elif GAME_STATE == OPTIONS_SCREEN_STATE:
                     GAME_STATE = SINGLEPLAYER_SCREEN_STATE
+            if GAME_STATE == MULTIPLAYER_SCREEN_STATE:
+                if active_nickname_text_box:
+                    if event.key == pygame.K_BACKSPACE:
+                        multiplayer_nickname = multiplayer_nickname[:-1]
+                    elif len(multiplayer_nickname) == 15:
+                        print("Sorry, too long nickname")
+                    else:
+                        multiplayer_nickname += event.unicode
+        if event.type == pygame.MOUSEBUTTONDOWN:
+            if multiplayer_nickname_text_box.collidepoint(event.pos):
+                active_nickname_text_box = True
+            else:
+                active_nickname_text_box = False
         if GAME_STATE == TITLE_SCREEN_STATE:
             if singleplayer_button.is_clicked(event):
                 GAME_STATE = SINGLEPLAYER_MODE_SELECTION_STATE
@@ -168,6 +182,14 @@ while running:
                 GAME_STATE = MULTIPLAYER_SCREEN_STATE
                 PREVIOUS_GAME_STATE = TITLE_SCREEN_STATE
                 sound_manager.play_sound("click")
+                if check_internet_connection("www.google.com", 3):
+                    print("Connected to the internet")
+                    sock = connect_to_server()
+                    if not sock:
+                        print("Couldnt connect to the server")
+                else:
+                    print("Your device is offline. Please connect to the internet.")
+
             if options_button.is_clicked(event):
                 color_scheme_grid = game.initialize_color_scheme_squares(all_colors)
                 GAME_STATE = OPTIONS_SCREEN_STATE
@@ -276,32 +298,14 @@ while running:
         # TODO: it seems that client tries to connect to the server more than once
         # TODO: multiplayer menu needs to show after nickname is registered in the server database
         elif GAME_STATE == MULTIPLAYER_SCREEN_STATE:
-            # TODO: here it checks again and again
-            if check_internet_connection("www.google.com", 3):
-                print("Connected to the internet")
-                if event.type == pygame.MOUSEBUTTONDOWN:
-                    if multiplayer_nickname_text_box.collidepoint(event.pos):
-                        active_nickname_text_box = True
-                    else:
-                        active_nickname_text_box = False
-                elif event.type == pygame.KEYDOWN:
-                    if active_nickname_text_box:
-                        if event.key == pygame.K_BACKSPACE:
-                            multiplayer_nickname = multiplayer_nickname[:-1]
-                        elif len(multiplayer_nickname) > 15:
-                            print("Sorry, too long nickname")
-                        else:
-                            multiplayer_nickname += event.unicode
-                # TODO: maybe a button is better here?
-                elif event.type == pygame.K_RETURN:
-                    if is_valid_nickname(multiplayer_nickname):
-                        pass
-                        # TODO send nickname to server db and get a response
-                    else:
-                        print("Change your nickname.")
-                sock = connect_to_server()
-                if not sock:
-                    print("Couldnt connect to the server")
+            if join_lobby_button.is_clicked(event):
+                if is_valid_nickname(multiplayer_nickname):
+                    if sock:
+                        send_message(sock, "CHECK_NICKNAME", {"nickname": multiplayer_nickname})
+                    # TODO send nickname to server db and get a response
+                else:
+                    print("Change your nickname.")
+
             if back_button.is_clicked(event):
                 GAME_STATE = TITLE_SCREEN_STATE
                 PREVIOUS_GAME_STATE = TITLE_SCREEN_STATE
@@ -415,6 +419,7 @@ while running:
         screen.blit(multiplayer_nickname_surface, (multiplayer_nickname_text_box.x + 5, multiplayer_nickname_text_box.y))
         multiplayer_nickname_text_box.w = max(100, multiplayer_nickname_surface.get_width() + 10)
         back_button.draw(screen)
+        join_lobby_button.draw(screen)
     elif GAME_STATE == OPTIONS_SCREEN_STATE:
         screen.blit(music_level_text, music_level_rect)
         screen.blit(music_level_value_text, music_level_value_rect)
