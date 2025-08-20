@@ -84,7 +84,9 @@ def handle_server_message(message):
         if callback_on_message:
             callback_on_message("Invalid nickname format.")
     elif msg_type == "MATCH_FOUND":
-        pass
+        opponent = message.get("opponent")
+        if callback_on_message:
+            callback_on_message(f"Match found. Your opponent is {opponent}", opponent)
     else:
         pass
 

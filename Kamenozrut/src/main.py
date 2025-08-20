@@ -15,8 +15,10 @@ TUTORIAL_SCREEN_STATE = 5
 SINGLEPLAYER_MODE_SELECTION_STATE = 6
 GAME_STATE = TITLE_SCREEN_STATE
 
+
 PREVIOUS_GAME_STATE = 0
 CURRENT_GAME_MODE = ""
+is_nickname_set = False
 flags = pygame.RESIZABLE
 
 pygame.init()
@@ -48,7 +50,8 @@ color_scheme_3 = Button(670, 680, 200, 60, "Boring Brick")
 color_scheme_4 = Button(1050, 680, 200, 60, "Lush Lagoon")
 
 new_game_button = Button(860, 120, 200, 60, "New game")
-join_lobby_button = Button(860, 570, 200, 60, "Join the lobby")
+join_lobby_button = Button(860, 630, 200, 60, "Join the lobby")
+find_match_button = Button(860, 550, 200, 60, "Play")
 
 pygame.display.set_caption("Kameňožrút")
 icon = pygame.image.load("../assets/images/rocks.png")
@@ -127,22 +130,26 @@ lose_text_rect = win_text.get_rect(center=(FULL_HD_RESOLUTION[0] // 2, FULL_HD_R
 enter_nickname_text = ui_font.render("Enter your nickname:", 1, (255, 255, 255))
 enter_nickname_text_rect = enter_nickname_text.get_rect(center=(FULL_HD_RESOLUTION[0] // 2, FULL_HD_RESOLUTION[1] // 2))
 multiplayer_nickname = ""
-multiplayer_nickname_text_box = pygame.Rect(enter_nickname_text_rect.right + 10,
-                                            FULL_HD_RESOLUTION[1] // 2 - 20, 100, 50)
+multiplayer_nickname_text_box = pygame.Rect(730, FULL_HD_RESOLUTION[1] // 2 + 30, 100, 50)
 active_nickname_text_box = False
 
 multiplayer_error = "Connecting to the server..."
 multiplayer_error_text = small_ui_font.render(multiplayer_error, 1, (255, 255, 255))
 multiplayer_error_text_rect = multiplayer_error_text.get_rect(topleft=(200, 940))
 
+opponents_name = None
+players_board = ""
+opponents_board = ""
 
 title = create_title(FULL_HD_RESOLUTION, title_font)
 
 
-def show_error(message):
-    global multiplayer_error, multiplayer_error_text
+def show_error(message, opponent=None):
+    global multiplayer_error, multiplayer_error_text, opponents_name
     multiplayer_error = message
     multiplayer_error_text = small_ui_font.render(multiplayer_error, True, (255, 255, 255))
+    if opponent:
+        opponents_name = opponent
 
 
 background = create_gradient(FULL_HD_RESOLUTION)
@@ -320,13 +327,17 @@ while running:
                 if validation_result is True:
                     if sock:
                         send_message(sock, "CHECK_NICKNAME", {"nickname": multiplayer_nickname})
+                        is_nickname_set = True
                     else:
                         multiplayer_error = "Can't connect to the server. Please try again later."
                         multiplayer_error_text = small_ui_font.render(multiplayer_error, 1, (255, 255, 255))
                 else:
                     multiplayer_error = validation_result
                     multiplayer_error_text = small_ui_font.render(multiplayer_error, 1, (255, 255, 255))
-
+            if find_match_button.is_clicked(event):
+                send_message(sock, "MATCHMAKING", {"nickname": multiplayer_nickname})
+                multiplayer_error = "Finding a match."
+                multiplayer_error_text = small_ui_font.render(multiplayer_error, 1, (255, 255, 255))
             if back_button.is_clicked(event):
                 GAME_STATE = TITLE_SCREEN_STATE
                 PREVIOUS_GAME_STATE = TITLE_SCREEN_STATE
@@ -432,18 +443,35 @@ while running:
         color_madness_singleplayer_mode_button.draw(screen)
         back_button.draw(screen)
     elif GAME_STATE == MULTIPLAYER_SCREEN_STATE:
-        screen.blit(enter_nickname_text, enter_nickname_text_rect)
-        screen.blit(multiplayer_error_text, multiplayer_error_text_rect)
-        if active_nickname_text_box:
-            nickname_text_box_color = pygame.Color((0, 0, 0))
+        if is_nickname_set:
+            multiplayer_nickname_surface = ui_font.render(multiplayer_nickname, True, (255, 255, 255))
+            multiplayer_nickname_rect = multiplayer_nickname_surface.get_rect(center=(FULL_HD_RESOLUTION[0] // 4, 140))
+            screen.blit(multiplayer_nickname_surface, multiplayer_nickname_rect)
+            if opponents_name is not None:
+                opponents_name_text = ui_font.render(opponents_name, True, (255, 255, 255))
+                opponents_name_rect = opponents_name_text.get_rect(
+                    center=(FULL_HD_RESOLUTION[0] * 3 // 4, 140))
+                multiplayer_nickname_rect = multiplayer_nickname_surface.get_rect(
+                    center=(FULL_HD_RESOLUTION[0] // 4, 140))
+                screen.blit(opponents_name_text, opponents_name_rect)
+                screen.blit(multiplayer_nickname_surface, multiplayer_nickname_rect)
+                pygame.draw.line(screen, 'black', (FULL_HD_RESOLUTION[0] // 2, 0),
+                                 (FULL_HD_RESOLUTION[0] // 2, screen.get_height()), width=2)
+            else:
+                find_match_button.draw(screen)
         else:
-            nickname_text_box_color = pygame.Color((255, 255, 255))
-        pygame.draw.rect(screen, nickname_text_box_color, multiplayer_nickname_text_box, 1)
-        multiplayer_nickname_surface = ui_font.render(multiplayer_nickname, True, (255, 255, 255))
-        screen.blit(multiplayer_nickname_surface, (multiplayer_nickname_text_box.x + 5, multiplayer_nickname_text_box.y))
-        multiplayer_nickname_text_box.w = max(100, multiplayer_nickname_surface.get_width() + 10)
+            screen.blit(enter_nickname_text, enter_nickname_text_rect)
+            if active_nickname_text_box:
+                nickname_text_box_color = pygame.Color((0, 0, 0))
+            else:
+                nickname_text_box_color = pygame.Color((255, 255, 255))
+            pygame.draw.rect(screen, nickname_text_box_color, multiplayer_nickname_text_box, 1)
+            multiplayer_nickname_surface = ui_font.render(multiplayer_nickname, True, (255, 255, 255))
+            screen.blit(multiplayer_nickname_surface, (multiplayer_nickname_text_box.x + 5, multiplayer_nickname_text_box.y))
+            multiplayer_nickname_text_box.w = max(100, multiplayer_nickname_surface.get_width() + 10)
+            join_lobby_button.draw(screen)
+        screen.blit(multiplayer_error_text, multiplayer_error_text_rect)
         back_button.draw(screen)
-        join_lobby_button.draw(screen)
     elif GAME_STATE == OPTIONS_SCREEN_STATE:
         screen.blit(music_level_text, music_level_rect)
         screen.blit(music_level_value_text, music_level_value_rect)
