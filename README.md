@@ -4,7 +4,9 @@
 Kamenozrut is one of few games in my uni's information system. During boring classes this was my way to make the time pass faster. Goal of this game is to clear the board by clicking on multiple adjacent stones with the same color which disappear after the click. My skill got better after each game, so I naturally wanted to compete and decided I want to code this game and make it multiplayer.
 
 ## System design
-To create client and server code I used **python**. My client side code is using pygame for easier game development. Client and server are connected through **sockets** in order to reliably receive all the data, because every move matters. Both client and server have **sqlite3 dbs** to save some important data, such as high score, game settings, active users etc. 
+To create client and server code I used **python**. My client side code is using pygame for easier game development. Client and server are connected through **sockets** in order to reliably receive all the data, because every move matters. Both client and server have **sqlite3 dbs** to save some important data, such as high score, game settings, active users etc.
+
+If you are interested about my server side code, you can find it right [here](https://github.com/Johnny974/KamenozrutServer)
 
 ## Features of my version
 ### Custom music and sound effects
