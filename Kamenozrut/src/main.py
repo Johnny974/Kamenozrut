@@ -25,7 +25,7 @@ pygame.init()
 screen = pygame.display.set_mode(FULL_HD_RESOLUTION)
 clock = pygame.time.Clock()
 
-game = Game(620, 300, 30, 4)
+# game = Game(620, 300, 30, 4)
 sound_manager = SoundManager()
 sound_manager.play_music()
 
@@ -178,7 +178,11 @@ while running:
                     PREVIOUS_GAME_STATE = SINGLEPLAYER_SCREEN_STATE
                 # TODO if i change color palette in game, i need to switch it also on the board
                 elif GAME_STATE == OPTIONS_SCREEN_STATE:
-                    GAME_STATE = SINGLEPLAYER_SCREEN_STATE
+                    GAME_STATE = PREVIOUS_GAME_STATE
+                elif GAME_STATE == MULTIPLAYER_SCREEN_STATE:
+                    GAME_STATE = OPTIONS_SCREEN_STATE
+                    # color_scheme_grid = mp_game.initialize_color_scheme_squares(all_colors)
+                    PREVIOUS_GAME_STATE = MULTIPLAYER_SCREEN_STATE
             if GAME_STATE == MULTIPLAYER_SCREEN_STATE:
                 if active_nickname_text_box:
                     if event.key == pygame.K_BACKSPACE:
@@ -197,6 +201,7 @@ while running:
                 GAME_STATE = SINGLEPLAYER_MODE_SELECTION_STATE
                 PREVIOUS_GAME_STATE = TITLE_SCREEN_STATE
                 sound_manager.play_sound("click")
+                game = Game(620, 300, 30, 4)
             if multiplayer_button.is_clicked(event):
                 GAME_STATE = MULTIPLAYER_SCREEN_STATE
                 PREVIOUS_GAME_STATE = TITLE_SCREEN_STATE
@@ -320,7 +325,6 @@ while running:
                 GAME_STATE = TITLE_SCREEN_STATE
                 PREVIOUS_GAME_STATE = TITLE_SCREEN_STATE
                 sound_manager.play_sound("click")
-        # TODO: multiplayer menu needs to show after nickname is registered in the server database
         elif GAME_STATE == MULTIPLAYER_SCREEN_STATE:
             if join_lobby_button.is_clicked(event):
                 validation_result = is_valid_nickname(multiplayer_nickname)
@@ -338,6 +342,9 @@ while running:
                 send_message(sock, "MATCHMAKING", {"nickname": multiplayer_nickname})
                 multiplayer_error = "Finding a match."
                 multiplayer_error_text = small_ui_font.render(multiplayer_error, 1, (255, 255, 255))
+                mp_game = Game(238, 300, 30, 4)
+                mp_game.colors = all_colors[default_scheme][:4]
+                mp_game.initialize_grid()
             if back_button.is_clicked(event):
                 GAME_STATE = TITLE_SCREEN_STATE
                 PREVIOUS_GAME_STATE = TITLE_SCREEN_STATE
@@ -456,7 +463,18 @@ while running:
                 screen.blit(opponents_name_text, opponents_name_rect)
                 screen.blit(multiplayer_nickname_surface, multiplayer_nickname_rect)
                 pygame.draw.line(screen, 'black', (FULL_HD_RESOLUTION[0] // 2, 0),
-                                 (FULL_HD_RESOLUTION[0] // 2, screen.get_height()), width=2)
+                                 (FULL_HD_RESOLUTION[0] // 2, 790), width=2)
+
+                pos = pygame.mouse.get_pos()
+                for i, row in enumerate(mp_game.grid):
+                    for j, cell in enumerate(row):
+                        if cell is not None:
+                            rect, color = cell
+                            if rect.collidepoint(pos):
+                                connected_squares = mp_game.find_connected_squares(i, j, color)
+                                if len(connected_squares) > 1:
+                                    mp_game.highlight_connected_squares(connected_squares, screen)
+                mp_game.draw(screen)
             else:
                 find_match_button.draw(screen)
         else:
