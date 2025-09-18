@@ -221,6 +221,7 @@ while running:
                     multiplayer_error_text = small_ui_font.render(multiplayer_error, 1, (255, 255, 255))
 
             if options_button.is_clicked(event):
+                # TODO initially game object is not created yet - it's created after you enter one of two modes, needs fix
                 color_scheme_grid = game.initialize_color_scheme_squares(all_colors)
                 GAME_STATE = OPTIONS_SCREEN_STATE
                 PREVIOUS_GAME_STATE = TITLE_SCREEN_STATE
@@ -456,6 +457,7 @@ while running:
             screen.blit(multiplayer_nickname_surface, multiplayer_nickname_rect)
             if opponents_name is not None:
                 opponents_name_text = ui_font.render(opponents_name, True, (255, 255, 255))
+                # TODO This is not centered to the other half of the screen
                 opponents_name_rect = opponents_name_text.get_rect(
                     center=(FULL_HD_RESOLUTION[0] * 3 // 4, 140))
                 multiplayer_nickname_rect = multiplayer_nickname_surface.get_rect(
@@ -474,6 +476,7 @@ while running:
                                 connected_squares = mp_game.find_connected_squares(i, j, color)
                                 if len(connected_squares) > 1:
                                     mp_game.highlight_connected_squares(connected_squares, screen)
+                                    # TODO click is not yet implemented - need to add
                 mp_game.draw(screen)
             else:
                 find_match_button.draw(screen)
