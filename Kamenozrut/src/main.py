@@ -25,7 +25,7 @@ pygame.init()
 screen = pygame.display.set_mode(FULL_HD_RESOLUTION)
 clock = pygame.time.Clock()
 
-# game = Game(620, 300, 30, 4)
+game = Game(620, 300, 30, 4)
 sound_manager = SoundManager()
 sound_manager.play_music()
 
@@ -150,6 +150,7 @@ def show_error(message, opponent=None):
     multiplayer_error_text = small_ui_font.render(multiplayer_error, True, (255, 255, 255))
     if opponent:
         opponents_name = opponent
+        send_message(sock, "GRID", {"nickname": opponents_name, "grid": mp_game.grid})
 
 
 background = create_gradient(FULL_HD_RESOLUTION)
@@ -176,7 +177,6 @@ while running:
                     color_scheme_grid = game.initialize_color_scheme_squares(all_colors)
                     GAME_STATE = OPTIONS_SCREEN_STATE
                     PREVIOUS_GAME_STATE = SINGLEPLAYER_SCREEN_STATE
-                # TODO if i change color palette in game, i need to switch it also on the board
                 elif GAME_STATE == OPTIONS_SCREEN_STATE:
                     GAME_STATE = PREVIOUS_GAME_STATE
                 elif GAME_STATE == MULTIPLAYER_SCREEN_STATE:
@@ -221,7 +221,6 @@ while running:
                     multiplayer_error_text = small_ui_font.render(multiplayer_error, 1, (255, 255, 255))
 
             if options_button.is_clicked(event):
-                # TODO initially game object is not created yet - it's created after you enter one of two modes, needs fix
                 color_scheme_grid = game.initialize_color_scheme_squares(all_colors)
                 GAME_STATE = OPTIONS_SCREEN_STATE
                 PREVIOUS_GAME_STATE = TITLE_SCREEN_STATE
@@ -352,6 +351,10 @@ while running:
                 sound_manager.play_sound("click")
                 multiplayer_error = "Connecting to the server..."
                 multiplayer_error_text = small_ui_font.render(multiplayer_error, 1, (255, 255, 255))
+            # if opponents_name is not None:
+            #     send_message(sock, "GRID", {"nickname": opponents_name, "grid": mp_game.grid})
+
+
         elif GAME_STATE == OPTIONS_SCREEN_STATE:
             if music_up_button.is_clicked(event):
                 if music_level_value < 10:
