@@ -40,9 +40,15 @@ class Game:
             self.grid.append(row)
         return self.grid
 
+    # TODO error maybe in this json format of grid
     def serialize_grid(self):
-        serialized_grid = [[({"x": rect.x, "y": rect.y, "w": rect.width, "h": rect.height}, list(color)) for rect, color in row] for row in self.grid]
+        serialized_grid = [[({"x": rect.x, "y": rect.y}, list(color)) for rect, color in row] for row in self.grid]
         return serialized_grid
+
+    def deserialize_grid(self, data):
+        deserialized_grid = [[(pygame.Rect(r["x"], r["y"], self.grid_width, self.grid_height), tuple(color)) for r, color in row] for row
+                             in data]
+        return deserialized_grid
 
     def initialize_color_scheme_squares(self, colors):
         color_scheme_grid = []
@@ -189,8 +195,3 @@ def remove_last_occurrence(lst, value):
 
 def add_score(num):
     return num * num
-
-
-def deserialize_grid(data):
-    deserialized_grid = [[(pygame.Rect(r["x"], r["y"], r["w"], r["h"]), tuple(color)) for r, color in row] for row in data]
-    return deserialized_grid

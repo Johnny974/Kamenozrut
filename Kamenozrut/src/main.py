@@ -151,7 +151,7 @@ def show_error(message, opponent=None, opponents_grid=None, opponents_color_sche
         opponents_name = opponent
         serialized_grid = mp_game.serialize_grid()
         current_color_scheme = get_colorscheme()
-        send_message(sock, "GRID", {"nickname": opponents_name, "grid": serialized_grid, "color_scheme": current_color_scheme})
+        send_message(sock, "GRID", {"nickname": multiplayer_nickname, "grid": serialized_grid, "color_scheme": current_color_scheme})
     if opponents_grid:
         opponents_board.grid = opponents_grid
         opponents_board.colors = opponents_color_scheme
@@ -186,7 +186,7 @@ while running:
                     GAME_STATE = PREVIOUS_GAME_STATE
                 elif GAME_STATE == MULTIPLAYER_SCREEN_STATE:
                     GAME_STATE = OPTIONS_SCREEN_STATE
-                    # color_scheme_grid = mp_game.initialize_color_scheme_squares(all_colors)
+                    color_scheme_grid = mp_game.initialize_color_scheme_squares(all_colors)
                     PREVIOUS_GAME_STATE = MULTIPLAYER_SCREEN_STATE
             if GAME_STATE == MULTIPLAYER_SCREEN_STATE:
                 if active_nickname_text_box:
@@ -393,6 +393,7 @@ while running:
                 if PREVIOUS_GAME_STATE == SINGLEPLAYER_SCREEN_STATE:
                     game.swap_color_palette(all_colors[default_scheme], all_colors[0])
                 # TODO If I am in multiplayer does the color palette change when I use the mp_game Game object?
+                # TODO also do i want to send this change to my opponent?
                 # elif PREVIOUS_GAME_STATE == MULTIPLAYER_SCREEN_STATE:
                 #     mp_game.swap_color_palette()
                 default_scheme = 0

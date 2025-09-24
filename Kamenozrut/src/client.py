@@ -86,13 +86,15 @@ def handle_server_message(message):
     elif msg_type == "MATCH_FOUND":
         opponent = message.get("opponent")
         if callback_on_message:
-            callback_on_message(f"Match found. Your opponent is {opponent}", opponent)
+            callback_on_message("Match found. Your opponent is {opponent}".format(opponent=opponent),
+            opponent=opponent)
     elif msg_type == "OPPONENTS_GRID":
         opponents_grid = message.get("grid")
         opponents_color_scheme = message.get("color_scheme")
         if callback_on_message:
-            callback_on_message(f"Opponent's grid and color scheme: {opponents_grid}, {opponents_color_scheme}", opponents_grid, opponents_color_scheme)
-
+            callback_on_message("Opponent's grid and color scheme received.",
+            opponents_grid=opponents_grid,
+            opponents_color_scheme=opponents_color_scheme)
 
 
 def is_valid_nickname(nickname):
