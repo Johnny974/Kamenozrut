@@ -138,19 +138,24 @@ multiplayer_error_text = small_ui_font.render(multiplayer_error, 1, (255, 255, 2
 multiplayer_error_text_rect = multiplayer_error_text.get_rect(topleft=(200, 940))
 
 opponents_name = None
-players_board = ""
-opponents_board = ""
+opponents_board = Game(1038, 300, 30, 4)
 
 title = create_title(FULL_HD_RESOLUTION, title_font)
 
 
-def show_error(message, opponent=None):
+def show_error(message, opponent=None, opponents_grid=None, opponents_color_scheme=None):
     global multiplayer_error, multiplayer_error_text, opponents_name
     multiplayer_error = message
     multiplayer_error_text = small_ui_font.render(multiplayer_error, True, (255, 255, 255))
     if opponent:
         opponents_name = opponent
-        send_message(sock, "GRID", {"nickname": opponents_name, "grid": mp_game.grid})
+        serialized_grid = mp_game.serialize_grid()
+        current_color_scheme = get_colorscheme()
+        send_message(sock, "GRID", {"nickname": opponents_name, "grid": serialized_grid, "color_scheme": current_color_scheme})
+    if opponents_grid:
+        opponents_board.grid = opponents_grid
+        opponents_board.colors = opponents_color_scheme
+        print(f"Here is board and color scheme of your opponent: {opponents_board}, {opponents_color_scheme}")
 
 
 background = create_gradient(FULL_HD_RESOLUTION)
@@ -387,6 +392,9 @@ while running:
             if color_scheme_1.is_clicked(event):
                 if PREVIOUS_GAME_STATE == SINGLEPLAYER_SCREEN_STATE:
                     game.swap_color_palette(all_colors[default_scheme], all_colors[0])
+                # TODO If I am in multiplayer does the color palette change when I use the mp_game Game object?
+                # elif PREVIOUS_GAME_STATE == MULTIPLAYER_SCREEN_STATE:
+                #     mp_game.swap_color_palette()
                 default_scheme = 0
                 set_colorscheme(default_scheme)
                 sound_manager.play_sound("click")

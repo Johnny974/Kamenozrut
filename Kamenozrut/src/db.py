@@ -1,7 +1,7 @@
 import sqlite3
 import datetime
 
-conn = sqlite3.connect("game_scores.db")
+conn = sqlite3.connect("game_scores.db", check_same_thread=False)
 
 cursor = conn.cursor()
 
