@@ -138,7 +138,7 @@ multiplayer_error_text = small_ui_font.render(multiplayer_error, 1, (255, 255, 2
 multiplayer_error_text_rect = multiplayer_error_text.get_rect(topleft=(200, 940))
 
 opponents_name = None
-opponents_board = Game(1038, 300, 30, 4)
+opponents_board = Game(1388, 300, 30, 4)
 
 title = create_title(FULL_HD_RESOLUTION, title_font)
 
@@ -153,9 +153,10 @@ def show_error(message, opponent=None, opponents_grid=None, opponents_color_sche
         current_color_scheme = get_colorscheme()
         send_message(sock, "GRID", {"nickname": multiplayer_nickname, "grid": serialized_grid, "color_scheme": current_color_scheme})
     if opponents_grid:
-        opponents_board.grid = opponents_grid
+        deserialized_opponents_grid = opponents_board.deserialize_grid(opponents_grid)
+        opponents_board.grid = deserialized_opponents_grid
         opponents_board.colors = opponents_color_scheme
-        print(f"Here is board and color scheme of your opponent: {opponents_board}, {opponents_color_scheme}")
+        print(f"Here is board and color scheme of your opponent: {opponents_board.grid}, {opponents_board.colors}")
 
 
 background = create_gradient(FULL_HD_RESOLUTION)
@@ -490,6 +491,8 @@ while running:
                                     mp_game.highlight_connected_squares(connected_squares, screen)
                                     # TODO click is not yet implemented - need to add
                 mp_game.draw(screen)
+                if len(opponents_board.grid) > 0:
+                    opponents_board.draw(screen)
             else:
                 find_match_button.draw(screen)
         else:

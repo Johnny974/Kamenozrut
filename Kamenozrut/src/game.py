@@ -42,11 +42,11 @@ class Game:
 
     # TODO error maybe in this json format of grid
     def serialize_grid(self):
-        serialized_grid = [[({"x": rect.x, "y": rect.y}, list(color)) for rect, color in row] for row in self.grid]
+        serialized_grid = [[({"x": rect.x + 768, "y": rect.y}, list(color)) for rect, color in row] for row in self.grid]
         return serialized_grid
 
     def deserialize_grid(self, data):
-        deserialized_grid = [[(pygame.Rect(r["x"], r["y"], self.grid_width, self.grid_height), tuple(color)) for r, color in row] for row
+        deserialized_grid = [[(pygame.Rect(r["x"], r["y"], self.square_size, self.square_size), tuple(color)) for r, color in row] for row
                              in data]
         return deserialized_grid
 
