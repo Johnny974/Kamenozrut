@@ -359,7 +359,16 @@ while running:
                 multiplayer_error_text = small_ui_font.render(multiplayer_error, 1, (255, 255, 255))
             # if opponents_name is not None:
             #     send_message(sock, "GRID", {"nickname": opponents_name, "grid": mp_game.grid})
-
+            if opponents_name is not None:
+                pos = pygame.mouse.get_pos()
+                if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
+                    for i, row in enumerate(mp_game.grid):
+                        for j, cell in enumerate(row):
+                            if cell is not None:
+                                rect, color = cell
+                                if rect.collidepoint(pos):
+                                    connected_squares_len = mp_game.handle_move(i, j, color)
+                                    send_message(sock, "MOVE",{"nickname": multiplayer_nickname, "square_description": [i, j, color]})
 
         elif GAME_STATE == OPTIONS_SCREEN_STATE:
             if music_up_button.is_clicked(event):
@@ -489,11 +498,11 @@ while running:
                                 connected_squares = mp_game.find_connected_squares(i, j, color)
                                 if len(connected_squares) > 1:
                                     mp_game.highlight_connected_squares(connected_squares, screen)
-                                    # TODO click is not yet implemented - need to add
                 mp_game.draw(screen)
                 if len(opponents_board.grid) > 0:
                     opponents_board.draw(screen)
-            else:
+            # TODO this condition is not the best - this should be displayed only when they dont play
+            elif len(opponents_board.grid) == 0:
                 find_match_button.draw(screen)
         else:
             screen.blit(enter_nickname_text, enter_nickname_text_rect)
