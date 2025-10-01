@@ -115,6 +115,10 @@ score = 0
 score_text = ui_font.render("Score:", 1, (255, 255, 255))
 score_value = ui_font.render(str(score), 1, (255, 255, 255))
 
+enemy_score = 0
+enemy_score_text = ui_font.render("Opponent's Score:", 1, (255, 255, 255))
+enemy_score_value = ui_font.render(str(enemy_score), 1, (255, 255, 255))
+
 high_score = 0
 high_score_text = ui_font.render("High Score:", 1, (255, 255, 255))
 high_score_value = ui_font.render(str(high_score), 1, (255, 255, 255))
@@ -144,7 +148,7 @@ title = create_title(FULL_HD_RESOLUTION, title_font)
 
 
 def show_error(message, opponent=None, opponents_grid=None, opponents_color_scheme=None, square_description=None):
-    global multiplayer_error, multiplayer_error_text, opponents_name
+    global multiplayer_error, multiplayer_error_text, opponents_name, enemy_score, enemy_score_value
     multiplayer_error = message
     multiplayer_error_text = small_ui_font.render(multiplayer_error, True, (255, 255, 255))
     if opponent:
@@ -158,7 +162,9 @@ def show_error(message, opponent=None, opponents_grid=None, opponents_color_sche
         opponents_board.colors = opponents_color_scheme
         # print(f"Here is board and color scheme of your opponent: {opponents_board.grid}, {opponents_board.colors}")
     if square_description:
-        opponents_board.handle_move(square_description[0], square_description[1], square_description[2])
+        opponents_squares_len = opponents_board.handle_move(square_description[0], square_description[1], square_description[2])
+        enemy_score += add_score(opponents_squares_len)
+        enemy_score_value = ui_font.render(str(enemy_score), 1, (255, 255, 255))
         # square_description = None
 
 
@@ -371,6 +377,8 @@ while running:
                                 rect, color = cell
                                 if rect.collidepoint(pos):
                                     connected_squares_len = mp_game.handle_move(i, j, color)
+                                    score += add_score(connected_squares_len)
+                                    score_value = ui_font.render(str(score), 1, (255, 255, 255))
                                     send_message(sock, "MOVE",{"nickname": multiplayer_nickname, "square_description": [i, j, color]})
 
         elif GAME_STATE == OPTIONS_SCREEN_STATE:
@@ -491,6 +499,12 @@ while running:
                 screen.blit(multiplayer_nickname_surface, multiplayer_nickname_rect)
                 pygame.draw.line(screen, 'black', (FULL_HD_RESOLUTION[0] // 2, 0),
                                  (FULL_HD_RESOLUTION[0] // 2, 790), width=2)
+
+                screen.blit(score_text, (210, 870))
+                screen.blit(score_value, (360, 870))
+                screen.blit(enemy_score_text, (1150, 870))
+                screen.blit(enemy_score_value, (1570, 870))
+
 
                 pos = pygame.mouse.get_pos()
                 for i, row in enumerate(mp_game.grid):
