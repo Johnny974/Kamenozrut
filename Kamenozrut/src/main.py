@@ -143,7 +143,7 @@ opponents_board = Game(1388, 300, 30, 4)
 title = create_title(FULL_HD_RESOLUTION, title_font)
 
 
-def show_error(message, opponent=None, opponents_grid=None, opponents_color_scheme=None):
+def show_error(message, opponent=None, opponents_grid=None, opponents_color_scheme=None, square_description=None):
     global multiplayer_error, multiplayer_error_text, opponents_name
     multiplayer_error = message
     multiplayer_error_text = small_ui_font.render(multiplayer_error, True, (255, 255, 255))
@@ -156,7 +156,10 @@ def show_error(message, opponent=None, opponents_grid=None, opponents_color_sche
         deserialized_opponents_grid = opponents_board.deserialize_grid(opponents_grid)
         opponents_board.grid = deserialized_opponents_grid
         opponents_board.colors = opponents_color_scheme
-        print(f"Here is board and color scheme of your opponent: {opponents_board.grid}, {opponents_board.colors}")
+        # print(f"Here is board and color scheme of your opponent: {opponents_board.grid}, {opponents_board.colors}")
+    if square_description:
+        opponents_board.handle_move(square_description[0], square_description[1], square_description[2])
+        # square_description = None
 
 
 background = create_gradient(FULL_HD_RESOLUTION)

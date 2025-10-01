@@ -95,6 +95,11 @@ def handle_server_message(message):
             callback_on_message("Opponent's grid and color scheme received.",
             opponents_grid=opponents_grid,
             opponents_color_scheme=opponents_color_scheme)
+    elif msg_type == "MOVE":
+        square_description = message.get("move")
+        square_description[2] = tuple(square_description[2])
+        if callback_on_message:
+            callback_on_message(f"Enemy move: {square_description}",square_description=square_description)
 
 
 def is_valid_nickname(nickname):
