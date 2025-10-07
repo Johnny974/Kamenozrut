@@ -8,6 +8,7 @@ HOST = "127.0.0.1"
 PORT = 5555
 callback_on_message = None
 
+is_in_match = False
 
 def check_internet_connection(url, timeout):
     connection = httplib.HTTPConnection(url, timeout=timeout)
@@ -88,6 +89,7 @@ def handle_server_message(message):
         if callback_on_message:
             callback_on_message("Match found. Your opponent is {opponent}".format(opponent=opponent),
             opponent=opponent)
+        is_in_match = True
     elif msg_type == "OPPONENTS_GRID":
         opponents_grid = message.get("grid")
         opponents_color_scheme = message.get("color_scheme")

@@ -4,7 +4,7 @@ from ui import (Button, create_gradient, animate_title, create_title, FONT_SIZE,
 from sound import SoundManager
 from db import (set_score, get_max_score, set_musiclevel, get_musiclevel, set_soundlevel, get_soundlevel,
                 set_colorscheme, get_colorscheme, update_score)
-from client import check_internet_connection, connect_to_server, send_message, is_valid_nickname
+from client import check_internet_connection, connect_to_server, send_message, is_valid_nickname, is_in_match
 
 FULL_HD_RESOLUTION = (1920, 1080)
 TITLE_SCREEN_STATE = 1
@@ -341,7 +341,7 @@ while running:
                 PREVIOUS_GAME_STATE = TITLE_SCREEN_STATE
                 sound_manager.play_sound("click")
         elif GAME_STATE == MULTIPLAYER_SCREEN_STATE:
-            if join_lobby_button.is_clicked(event):
+            if not is_in_match and join_lobby_button.is_clicked(event):
                 validation_result = is_valid_nickname(multiplayer_nickname)
                 if validation_result is True:
                     if sock:
@@ -353,13 +353,14 @@ while running:
                 else:
                     multiplayer_error = validation_result
                     multiplayer_error_text = small_ui_font.render(multiplayer_error, 1, (255, 255, 255))
-            if find_match_button.is_clicked(event):
+            if not is_in_match and find_match_button.is_clicked(event):
                 send_message(sock, "MATCHMAKING", {"nickname": multiplayer_nickname})
                 multiplayer_error = "Finding a match."
                 multiplayer_error_text = small_ui_font.render(multiplayer_error, 1, (255, 255, 255))
                 mp_game = Game(238, 300, 30, 4)
                 mp_game.colors = all_colors[default_scheme][:4]
                 mp_game.initialize_grid()
+                is_in_match = True
             if back_button.is_clicked(event):
                 GAME_STATE = TITLE_SCREEN_STATE
                 PREVIOUS_GAME_STATE = TITLE_SCREEN_STATE
@@ -483,6 +484,7 @@ while running:
         standard_singleplayer_mode_button.draw(screen)
         color_madness_singleplayer_mode_button.draw(screen)
         back_button.draw(screen)
+    # TODO bug - during a game buttons are hidden but still clickable(check nick, find a game)
     elif GAME_STATE == MULTIPLAYER_SCREEN_STATE:
         if is_nickname_set:
             multiplayer_nickname_surface = ui_font.render(multiplayer_nickname, True, (255, 255, 255))
@@ -519,7 +521,7 @@ while running:
                 if len(opponents_board.grid) > 0:
                     opponents_board.draw(screen)
             # TODO this condition is not the best - this should be displayed only when they dont play
-            elif len(opponents_board.grid) == 0:
+            if not is_in_match:
                 find_match_button.draw(screen)
         else:
             screen.blit(enter_nickname_text, enter_nickname_text_rect)
@@ -531,7 +533,8 @@ while running:
             multiplayer_nickname_surface = ui_font.render(multiplayer_nickname, True, (255, 255, 255))
             screen.blit(multiplayer_nickname_surface, (multiplayer_nickname_text_box.x + 5, multiplayer_nickname_text_box.y))
             multiplayer_nickname_text_box.w = max(100, multiplayer_nickname_surface.get_width() + 10)
-            join_lobby_button.draw(screen)
+            if not is_in_match:
+                join_lobby_button.draw(screen)
         screen.blit(multiplayer_error_text, multiplayer_error_text_rect)
         back_button.draw(screen)
     elif GAME_STATE == OPTIONS_SCREEN_STATE:
