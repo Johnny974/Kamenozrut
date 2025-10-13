@@ -276,7 +276,7 @@ while running:
                                         update_score(score, CURRENT_GAME_MODE)
                                 if won_any_game:
                                     update_score(score, CURRENT_GAME_MODE)
-
+            # TODO every back button needs to fix the game state
             if back_button.is_clicked(event):
                 GAME_STATE = TITLE_SCREEN_STATE
                 game = Game(620, 300, 30, 4)
@@ -353,6 +353,7 @@ while running:
                 else:
                     multiplayer_error = validation_result
                     multiplayer_error_text = small_ui_font.render(multiplayer_error, 1, (255, 255, 255))
+            # TODO match can be found even without nickname - need to update the if condition
             if not is_in_match and find_match_button.is_clicked(event):
                 send_message(sock, "MATCHMAKING", {"nickname": multiplayer_nickname})
                 multiplayer_error = "Finding a match."
