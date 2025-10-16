@@ -341,7 +341,7 @@ while running:
                 PREVIOUS_GAME_STATE = TITLE_SCREEN_STATE
                 sound_manager.play_sound("click")
         elif GAME_STATE == MULTIPLAYER_SCREEN_STATE:
-            if not is_in_match and join_lobby_button.is_clicked(event):
+            if not is_nickname_set and opponents_name is None and join_lobby_button.is_clicked(event):
                 validation_result = is_valid_nickname(multiplayer_nickname)
                 if validation_result is True:
                     if sock:
@@ -353,8 +353,7 @@ while running:
                 else:
                     multiplayer_error = validation_result
                     multiplayer_error_text = small_ui_font.render(multiplayer_error, 1, (255, 255, 255))
-            # TODO match can be found even without nickname - need to update the if condition
-            if not is_in_match and find_match_button.is_clicked(event):
+            if is_nickname_set and not is_in_match and find_match_button.is_clicked(event):
                 send_message(sock, "MATCHMAKING", {"nickname": multiplayer_nickname})
                 multiplayer_error = "Finding a match."
                 multiplayer_error_text = small_ui_font.render(multiplayer_error, 1, (255, 255, 255))

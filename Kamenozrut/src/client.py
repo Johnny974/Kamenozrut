@@ -10,6 +10,7 @@ callback_on_message = None
 
 is_in_match = False
 
+
 def check_internet_connection(url, timeout):
     connection = httplib.HTTPConnection(url, timeout=timeout)
     try:
