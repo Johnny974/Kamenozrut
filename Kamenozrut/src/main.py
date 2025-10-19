@@ -1,4 +1,6 @@
 import pygame
+from datetime import datetime
+import pytz
 from game import Game, add_score
 from ui import (Button, create_gradient, animate_title, create_title, FONT_SIZE, TITLE_FONT_SIZE, SMALL_FONT_SIZE)
 from sound import SoundManager
@@ -141,14 +143,21 @@ multiplayer_error = "Connecting to the server..."
 multiplayer_error_text = small_ui_font.render(multiplayer_error, 1, (255, 255, 255))
 multiplayer_error_text_rect = multiplayer_error_text.get_rect(topleft=(200, 940))
 
+mp_game_start_time = None
+mp_game_duration = 180
+
+multiplayer_timer = "3:00"
+multiplayer_timer_text = ui_font.render(multiplayer_timer, 1, (255, 255, 255))
+multiplayer_timer_text_rect = multiplayer_timer_text.get_rect(center=(FULL_HD_RESOLUTION[0] // 2, 150))
+
 opponents_name = None
 opponents_board = Game(1388, 300, 30, 4)
 
 title = create_title(FULL_HD_RESOLUTION, title_font)
 
 
-def show_error(message, opponent=None, opponents_grid=None, opponents_color_scheme=None, square_description=None):
-    global multiplayer_error, multiplayer_error_text, opponents_name, enemy_score, enemy_score_value
+def show_error(message, opponent=None, opponents_grid=None, opponents_color_scheme=None, square_description=None, start_time=None, duration=None):
+    global multiplayer_error, multiplayer_error_text, opponents_name, enemy_score, enemy_score_value, mp_game_start_time, mp_game_duration
     multiplayer_error = message
     multiplayer_error_text = small_ui_font.render(multiplayer_error, True, (255, 255, 255))
     if opponent:
@@ -166,7 +175,10 @@ def show_error(message, opponent=None, opponents_grid=None, opponents_color_sche
         enemy_score += add_score(opponents_squares_len)
         enemy_score_value = ui_font.render(str(enemy_score), 1, (255, 255, 255))
         # square_description = None
-
+    if start_time and duration:
+        mp_game_start_time = start_time
+        mp_game_duration = duration
+        sound_manager.play_sound("game_start")
 
 background = create_gradient(FULL_HD_RESOLUTION)
 running = True
@@ -326,7 +338,7 @@ while running:
                 CURRENT_GAME_MODE = "Standard"
                 high_score = get_max_score(CURRENT_GAME_MODE)
                 high_score_value = ui_font.render(str(high_score), 1, (255, 255, 255))
-                sound_manager.play_sound("click")
+                sound_manager.play_sound("game_start")
             if color_madness_singleplayer_mode_button.is_clicked(event):
                 game.colors = all_colors[default_scheme]
                 game.initialize_grid()
@@ -335,7 +347,7 @@ while running:
                 CURRENT_GAME_MODE = "ColorMadness"
                 high_score = get_max_score(CURRENT_GAME_MODE)
                 high_score_value = ui_font.render(str(high_score), 1, (255, 255, 255))
-                sound_manager.play_sound("click")
+                sound_manager.play_sound("game_start")
             if back_button.is_clicked(event):
                 GAME_STATE = TITLE_SCREEN_STATE
                 PREVIOUS_GAME_STATE = TITLE_SCREEN_STATE
@@ -484,7 +496,6 @@ while running:
         standard_singleplayer_mode_button.draw(screen)
         color_madness_singleplayer_mode_button.draw(screen)
         back_button.draw(screen)
-    # TODO bug - during a game buttons are hidden but still clickable(check nick, find a game)
     elif GAME_STATE == MULTIPLAYER_SCREEN_STATE:
         if is_nickname_set:
             multiplayer_nickname_surface = ui_font.render(multiplayer_nickname, True, (255, 255, 255))
@@ -499,9 +510,21 @@ while running:
                     center=(FULL_HD_RESOLUTION[0] // 4, 140))
                 screen.blit(opponents_name_text, opponents_name_rect)
                 screen.blit(multiplayer_nickname_surface, multiplayer_nickname_rect)
-                pygame.draw.line(screen, 'black', (FULL_HD_RESOLUTION[0] // 2, 0),
+                pygame.draw.line(screen, 'black', (FULL_HD_RESOLUTION[0] // 2, 200),
                                  (FULL_HD_RESOLUTION[0] // 2, 790), width=2)
 
+                if mp_game_start_time:
+                    elapsed = (datetime.now(pytz.timezone("Europe/Bratislava")) - mp_game_start_time).total_seconds()
+                    remaining = max(0, int(mp_game_duration - elapsed))
+
+                    minutes = remaining // 60
+                    seconds = remaining % 60
+                    timer_str = f"{minutes}:{seconds:02d}"
+
+                    multiplayer_timer_text = ui_font.render(timer_str, True, (255, 255, 255))
+                    multiplayer_timer_text_rect = multiplayer_timer_text.get_rect(center=(FULL_HD_RESOLUTION[0] // 2, 150))
+
+                screen.blit(multiplayer_timer_text, multiplayer_timer_text_rect)
                 screen.blit(score_text, (210, 870))
                 screen.blit(score_value, (360, 870))
                 screen.blit(enemy_score_text, (1150, 870))

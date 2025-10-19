@@ -3,6 +3,8 @@ from threading import Thread
 import http.client as httplib
 import re
 import json
+from datetime import datetime
+import pytz
 
 HOST = "127.0.0.1"
 PORT = 5555
@@ -103,6 +105,14 @@ def handle_server_message(message):
         square_description[2] = tuple(square_description[2])
         if callback_on_message:
             callback_on_message(f"Enemy move: {square_description}",square_description=square_description)
+    elif msg_type == "GAME_START":
+        start_time = message.get("start_time")
+        duration = message.get("duration")
+
+        bratislava_tz = pytz.timezone("Europe/Bratislava")
+        start_time = datetime.fromisoformat(start_time).astimezone(bratislava_tz)
+        if callback_on_message:
+            callback_on_message("Game start and duration of game received.",start_time=start_time,duration=duration)
 
 
 def is_valid_nickname(nickname):

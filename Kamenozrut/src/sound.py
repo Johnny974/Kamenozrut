@@ -10,7 +10,8 @@ class SoundManager:
             "block": pygame.mixer.Sound("../assets/sounds/block_hit.ogg"),
             "click": pygame.mixer.Sound("../assets/sounds/tic-toc-click.wav"),
             "laugh": pygame.mixer.Sound("../assets/sounds/witchy-laugh.wav"),
-            "cheer": pygame.mixer.Sound("../assets/sounds/crowd-cheer.wav")
+            "cheer": pygame.mixer.Sound("../assets/sounds/crowd-cheer.wav"),
+            "game_start": pygame.mixer.Sound("../assets/sounds/game-start.ogg")
         }
         self.music_files = ["../assets/sounds/Neo soul loopsy.wav",
                             "../assets/sounds/Pixel Nostalgia.wav"]
