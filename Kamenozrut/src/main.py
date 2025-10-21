@@ -6,8 +6,8 @@ from ui import (Button, create_gradient, animate_title, create_title, FONT_SIZE,
 from sound import SoundManager
 from db import (set_score, get_max_score, set_musiclevel, get_musiclevel, set_soundlevel, get_soundlevel,
                 set_colorscheme, get_colorscheme, update_score)
-from client import check_internet_connection, connect_to_server, send_message, is_valid_nickname, is_in_match
-
+# from client import check_internet_connection, connect_to_server, send_message, is_valid_nickname, is_in_match, room_id
+import client
 FULL_HD_RESOLUTION = (1920, 1080)
 TITLE_SCREEN_STATE = 1
 SINGLEPLAYER_SCREEN_STATE = 2
@@ -164,7 +164,8 @@ def show_error(message, opponent=None, opponents_grid=None, opponents_color_sche
         opponents_name = opponent
         serialized_grid = mp_game.serialize_grid()
         current_color_scheme = get_colorscheme()
-        send_message(sock, "GRID", {"nickname": multiplayer_nickname, "grid": serialized_grid, "color_scheme": current_color_scheme})
+        print("Room_id v maine" + client.room_id)
+        client.send_message(sock, "GRID", {"nickname": multiplayer_nickname, "room_id": client.room_id, "grid": serialized_grid, "color_scheme": current_color_scheme})
     if opponents_grid:
         deserialized_opponents_grid = opponents_board.deserialize_grid(opponents_grid)
         opponents_board.grid = deserialized_opponents_grid
@@ -233,10 +234,10 @@ while running:
                 GAME_STATE = MULTIPLAYER_SCREEN_STATE
                 PREVIOUS_GAME_STATE = TITLE_SCREEN_STATE
                 sound_manager.play_sound("click")
-                if check_internet_connection("www.google.com", 3):
+                if client.check_internet_connection("www.google.com", 3):
                     multiplayer_error = "Connected to the internet. Connecting to the server..."
                     multiplayer_error_text = small_ui_font.render(multiplayer_error, 1, (255, 255, 255))
-                    sock = connect_to_server(on_message=show_error)
+                    sock = client.connect_to_server(on_message=show_error)
                     if not sock:
                         multiplayer_error = "Couldnt connect to the server. Please try again later."
                         multiplayer_error_text = small_ui_font.render(multiplayer_error, 1, (255, 255, 255))
@@ -354,10 +355,10 @@ while running:
                 sound_manager.play_sound("click")
         elif GAME_STATE == MULTIPLAYER_SCREEN_STATE:
             if not is_nickname_set and opponents_name is None and join_lobby_button.is_clicked(event):
-                validation_result = is_valid_nickname(multiplayer_nickname)
+                validation_result = client.is_valid_nickname(multiplayer_nickname)
                 if validation_result is True:
                     if sock:
-                        send_message(sock, "CHECK_NICKNAME", {"nickname": multiplayer_nickname})
+                        client.send_message(sock, "CHECK_NICKNAME", {"nickname": multiplayer_nickname})
                         is_nickname_set = True
                     else:
                         multiplayer_error = "Can't connect to the server. Please try again later."
@@ -365,14 +366,14 @@ while running:
                 else:
                     multiplayer_error = validation_result
                     multiplayer_error_text = small_ui_font.render(multiplayer_error, 1, (255, 255, 255))
-            if is_nickname_set and not is_in_match and find_match_button.is_clicked(event):
-                send_message(sock, "MATCHMAKING", {"nickname": multiplayer_nickname})
+            if is_nickname_set and not client.is_in_match and find_match_button.is_clicked(event):
+                client.send_message(sock, "MATCHMAKING", {"nickname": multiplayer_nickname})
                 multiplayer_error = "Finding a match."
                 multiplayer_error_text = small_ui_font.render(multiplayer_error, 1, (255, 255, 255))
                 mp_game = Game(238, 300, 30, 4)
                 mp_game.colors = all_colors[default_scheme][:4]
                 mp_game.initialize_grid()
-                is_in_match = True
+                client.is_in_match = True
             if back_button.is_clicked(event):
                 GAME_STATE = TITLE_SCREEN_STATE
                 PREVIOUS_GAME_STATE = TITLE_SCREEN_STATE
@@ -392,7 +393,12 @@ while running:
                                     connected_squares_len = mp_game.handle_move(i, j, color)
                                     score += add_score(connected_squares_len)
                                     score_value = ui_font.render(str(score), 1, (255, 255, 255))
-                                    send_message(sock, "MOVE",{"nickname": multiplayer_nickname, "square_description": [i, j, color]})
+                                    client.send_message(sock, "MOVE", {"nickname": multiplayer_nickname, "room_id": client.room_id, "square_description": [i, j, color]})
+                                    game_over_message = mp_game.is_game_over()
+                if game_over_message == "You won":
+                    client.send_message(sock, "GAME_END", {"nickname": multiplayer_nickname, "room_id": client.room_id, "won": "true", "score": score})
+                elif game_over_message == "No moves left":
+                    client.send_message(sock, "GAME_END", {"nickname": multiplayer_nickname, "room_id": client.room_id, "won": "false", "score": score})
 
         elif GAME_STATE == OPTIONS_SCREEN_STATE:
             if music_up_button.is_clicked(event):
@@ -527,8 +533,8 @@ while running:
                 screen.blit(multiplayer_timer_text, multiplayer_timer_text_rect)
                 screen.blit(score_text, (210, 870))
                 screen.blit(score_value, (360, 870))
-                screen.blit(enemy_score_text, (1150, 870))
-                screen.blit(enemy_score_value, (1570, 870))
+                screen.blit(enemy_score_text, (1150, 860))
+                screen.blit(enemy_score_value, (1570, 860))
 
 
                 pos = pygame.mouse.get_pos()
@@ -544,7 +550,7 @@ while running:
                 if len(opponents_board.grid) > 0:
                     opponents_board.draw(screen)
             # TODO this condition is not the best - this should be displayed only when they dont play
-            if not is_in_match:
+            if not client.is_in_match:
                 find_match_button.draw(screen)
         else:
             screen.blit(enter_nickname_text, enter_nickname_text_rect)
@@ -556,7 +562,7 @@ while running:
             multiplayer_nickname_surface = ui_font.render(multiplayer_nickname, True, (255, 255, 255))
             screen.blit(multiplayer_nickname_surface, (multiplayer_nickname_text_box.x + 5, multiplayer_nickname_text_box.y))
             multiplayer_nickname_text_box.w = max(100, multiplayer_nickname_surface.get_width() + 10)
-            if not is_in_match:
+            if not client.is_in_match:
                 join_lobby_button.draw(screen)
         screen.blit(multiplayer_error_text, multiplayer_error_text_rect)
         back_button.draw(screen)

@@ -11,6 +11,7 @@ PORT = 5555
 callback_on_message = None
 
 is_in_match = False
+room_id = None
 
 
 def check_internet_connection(url, timeout):
@@ -73,6 +74,7 @@ def receive_messages(sock):
 
 
 def handle_server_message(message):
+    global is_in_match, room_id
     msg_type = message.get("type")
 
     if msg_type == "NICKNAME_OK":
@@ -89,10 +91,19 @@ def handle_server_message(message):
             callback_on_message("Invalid nickname format.")
     elif msg_type == "MATCH_FOUND":
         opponent = message.get("opponent")
-        if callback_on_message:
-            callback_on_message("Match found. Your opponent is {opponent}".format(opponent=opponent),
-            opponent=opponent)
+        start_time = message.get("start_time")
+        duration = message.get("duration")
+        room_id = message.get("room_id")
+        print(room_id)
         is_in_match = True
+
+        bratislava_tz = pytz.timezone("Europe/Bratislava")
+        start_time = datetime.fromisoformat(start_time).astimezone(bratislava_tz)
+        if callback_on_message:
+            callback_on_message("Match found. Your opponent is {opponent}",
+                                opponent=opponent,
+                                start_time=start_time,
+                                duration=duration)
     elif msg_type == "OPPONENTS_GRID":
         opponents_grid = message.get("grid")
         opponents_color_scheme = message.get("color_scheme")
@@ -105,14 +116,6 @@ def handle_server_message(message):
         square_description[2] = tuple(square_description[2])
         if callback_on_message:
             callback_on_message(f"Enemy move: {square_description}",square_description=square_description)
-    elif msg_type == "GAME_START":
-        start_time = message.get("start_time")
-        duration = message.get("duration")
-
-        bratislava_tz = pytz.timezone("Europe/Bratislava")
-        start_time = datetime.fromisoformat(start_time).astimezone(bratislava_tz)
-        if callback_on_message:
-            callback_on_message("Game start and duration of game received.",start_time=start_time,duration=duration)
 
 
 def is_valid_nickname(nickname):
