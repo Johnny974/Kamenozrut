@@ -116,6 +116,9 @@ def handle_server_message(message):
         square_description[2] = tuple(square_description[2])
         if callback_on_message:
             callback_on_message(f"Enemy move: {square_description}",square_description=square_description)
+    elif msg_type == "GAME_WINNER":
+        winner = message.get("winner")
+        # TODO also the timer should stop and now the game results should show up
 
 
 def is_valid_nickname(nickname):

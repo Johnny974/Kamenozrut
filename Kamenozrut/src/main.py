@@ -54,6 +54,7 @@ color_scheme_4 = Button(1050, 680, 200, 60, "Lush Lagoon")
 new_game_button = Button(860, 120, 200, 60, "New game")
 join_lobby_button = Button(860, 630, 200, 60, "Join the lobby")
 find_match_button = Button(860, 550, 200, 60, "Play")
+rematch_button = Button(860, 200, 200, 60, "New game")
 
 pygame.display.set_caption("Kameňožrút")
 icon = pygame.image.load("../assets/images/rocks.png")
@@ -128,6 +129,7 @@ high_score_value = ui_font.render(str(high_score), 1, (255, 255, 255))
 win_text = title_font.render("You WON!", 1, (255, 255, 255))
 win_text_rect = win_text.get_rect(center=(FULL_HD_RESOLUTION[0] // 2, FULL_HD_RESOLUTION[1] // 2))
 game_over_message = ""
+mp_game_end_sent = False
 
 lose_text = title_font.render("You LOST!", 1, (255, 255, 255))
 lose_text_rect = win_text.get_rect(center=(FULL_HD_RESOLUTION[0] // 2, FULL_HD_RESOLUTION[1] // 2))
@@ -380,8 +382,7 @@ while running:
                 sound_manager.play_sound("click")
                 multiplayer_error = "Connecting to the server..."
                 multiplayer_error_text = small_ui_font.render(multiplayer_error, 1, (255, 255, 255))
-            # if opponents_name is not None:
-            #     send_message(sock, "GRID", {"nickname": opponents_name, "grid": mp_game.grid})
+
             if opponents_name is not None:
                 pos = pygame.mouse.get_pos()
                 if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
@@ -391,14 +392,17 @@ while running:
                                 rect, color = cell
                                 if rect.collidepoint(pos):
                                     connected_squares_len = mp_game.handle_move(i, j, color)
-                                    score += add_score(connected_squares_len)
-                                    score_value = ui_font.render(str(score), 1, (255, 255, 255))
-                                    client.send_message(sock, "MOVE", {"nickname": multiplayer_nickname, "room_id": client.room_id, "square_description": [i, j, color]})
+                                    if connected_squares_len > 1:
+                                        score += add_score(connected_squares_len)
+                                        score_value = ui_font.render(str(score), 1, (255, 255, 255))
+                                        client.send_message(sock, "MOVE", {"nickname": multiplayer_nickname, "room_id": client.room_id, "square_description": [i, j, color]})
                                     game_over_message = mp_game.is_game_over()
-                if game_over_message == "You won":
-                    client.send_message(sock, "GAME_END", {"nickname": multiplayer_nickname, "room_id": client.room_id, "won": "true", "score": score})
-                elif game_over_message == "No moves left":
-                    client.send_message(sock, "GAME_END", {"nickname": multiplayer_nickname, "room_id": client.room_id, "won": "false", "score": score})
+                if not mp_game_end_sent and game_over_message == "You won":
+                    client.send_message(sock, "GAME_END", {"nickname": multiplayer_nickname, "room_id": client.room_id, "finished": "True", "reason": game_over_message, "score": score})
+                    mp_game_end_sent = True
+                elif not mp_game_end_sent and game_over_message == "No moves left":
+                    client.send_message(sock, "GAME_END", {"nickname": multiplayer_nickname, "room_id": client.room_id, "finished": "True", "reason": game_over_message, "score": score})
+                    mp_game_end_sent = True
 
         elif GAME_STATE == OPTIONS_SCREEN_STATE:
             if music_up_button.is_clicked(event):
@@ -527,6 +531,15 @@ while running:
                     seconds = remaining % 60
                     timer_str = f"{minutes}:{seconds:02d}"
 
+                    if not mp_game_end_sent and remaining == 0:
+                        game_over_message = "No time left"
+                        client.send_message(sock, "GAME_END",
+                                            {"nickname": multiplayer_nickname, "room_id": client.room_id,
+                                             "finished": "True", "reason": game_over_message, "score": score})
+                        mp_game_end_sent = True
+                        # rematch_button.draw(screen)
+                        # new_game_button.draw(screen)
+
                     multiplayer_timer_text = ui_font.render(timer_str, True, (255, 255, 255))
                     multiplayer_timer_text_rect = multiplayer_timer_text.get_rect(center=(FULL_HD_RESOLUTION[0] // 2, 150))
 
@@ -552,6 +565,10 @@ while running:
             # TODO this condition is not the best - this should be displayed only when they dont play
             if not client.is_in_match:
                 find_match_button.draw(screen)
+            # TODO buttons should be displayed when both players game ended
+            if game_over_message == "No time left" or game_over_message == "You won" or game_over_message == "No moves left":
+                pass
+
         else:
             screen.blit(enter_nickname_text, enter_nickname_text_rect)
             if active_nickname_text_box:
