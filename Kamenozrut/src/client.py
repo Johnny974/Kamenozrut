@@ -12,6 +12,7 @@ callback_on_message = None
 
 is_in_match = False
 room_id = None
+winner = None
 
 
 def check_internet_connection(url, timeout):
@@ -74,7 +75,7 @@ def receive_messages(sock):
 
 
 def handle_server_message(message):
-    global is_in_match, room_id
+    global is_in_match, room_id, winner
     msg_type = message.get("type")
 
     if msg_type == "NICKNAME_OK":
@@ -118,6 +119,7 @@ def handle_server_message(message):
             callback_on_message(f"Enemy move: {square_description}",square_description=square_description)
     elif msg_type == "GAME_WINNER":
         winner = message.get("winner")
+        print("Here is the winner: ", winner)
         # TODO also the timer should stop and now the game results should show up
 
 

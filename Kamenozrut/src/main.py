@@ -24,7 +24,8 @@ is_nickname_set = False
 flags = pygame.RESIZABLE
 
 pygame.init()
-screen = pygame.display.set_mode(FULL_HD_RESOLUTION)
+# to go back to full hd I should replace (1900, 1000) with FULL_HD_RESOLUTION
+screen = pygame.display.set_mode((1900, 1000), pygame.RESIZABLE | pygame.SHOWN)
 clock = pygame.time.Clock()
 
 game = Game(620, 300, 30, 4)
@@ -236,6 +237,9 @@ while running:
                 GAME_STATE = MULTIPLAYER_SCREEN_STATE
                 PREVIOUS_GAME_STATE = TITLE_SCREEN_STATE
                 sound_manager.play_sound("click")
+                mp_game = Game(238, 300, 30, 4)
+                mp_game.colors = all_colors[default_scheme][:4]
+                mp_game.initialize_grid()
                 if client.check_internet_connection("www.google.com", 3):
                     multiplayer_error = "Connected to the internet. Connecting to the server..."
                     multiplayer_error_text = small_ui_font.render(multiplayer_error, 1, (255, 255, 255))
@@ -372,9 +376,9 @@ while running:
                 client.send_message(sock, "MATCHMAKING", {"nickname": multiplayer_nickname})
                 multiplayer_error = "Finding a match."
                 multiplayer_error_text = small_ui_font.render(multiplayer_error, 1, (255, 255, 255))
-                mp_game = Game(238, 300, 30, 4)
-                mp_game.colors = all_colors[default_scheme][:4]
-                mp_game.initialize_grid()
+                # mp_game = Game(238, 300, 30, 4)
+                # mp_game.colors = all_colors[default_scheme][:4]
+                # mp_game.initialize_grid()
                 client.is_in_match = True
             if back_button.is_clicked(event):
                 GAME_STATE = TITLE_SCREEN_STATE
@@ -392,7 +396,7 @@ while running:
                                 rect, color = cell
                                 if rect.collidepoint(pos):
                                     connected_squares_len = mp_game.handle_move(i, j, color)
-                                    if connected_squares_len > 1:
+                                    if not mp_game_end_sent and connected_squares_len > 1:
                                         score += add_score(connected_squares_len)
                                         score_value = ui_font.render(str(score), 1, (255, 255, 255))
                                         client.send_message(sock, "MOVE", {"nickname": multiplayer_nickname, "room_id": client.room_id, "square_description": [i, j, color]})
@@ -520,8 +524,7 @@ while running:
                     center=(FULL_HD_RESOLUTION[0] // 4, 140))
                 screen.blit(opponents_name_text, opponents_name_rect)
                 screen.blit(multiplayer_nickname_surface, multiplayer_nickname_rect)
-                pygame.draw.line(screen, 'black', (FULL_HD_RESOLUTION[0] // 2, 200),
-                                 (FULL_HD_RESOLUTION[0] // 2, 790), width=2)
+
 
                 if mp_game_start_time:
                     elapsed = (datetime.now(pytz.timezone("Europe/Bratislava")) - mp_game_start_time).total_seconds()
@@ -542,12 +545,16 @@ while running:
 
                     multiplayer_timer_text = ui_font.render(timer_str, True, (255, 255, 255))
                     multiplayer_timer_text_rect = multiplayer_timer_text.get_rect(center=(FULL_HD_RESOLUTION[0] // 2, 150))
-
-                screen.blit(multiplayer_timer_text, multiplayer_timer_text_rect)
-                screen.blit(score_text, (210, 870))
-                screen.blit(score_value, (360, 870))
-                screen.blit(enemy_score_text, (1150, 860))
-                screen.blit(enemy_score_value, (1570, 860))
+                if client.winner is None:
+                    pygame.draw.line(screen, 'black', (FULL_HD_RESOLUTION[0] // 2, 200),
+                                 (FULL_HD_RESOLUTION[0] // 2, 790), width=2)
+                    screen.blit(multiplayer_timer_text, multiplayer_timer_text_rect)
+                    screen.blit(score_text, (210, 870))
+                    screen.blit(score_value, (360, 870))
+                    screen.blit(enemy_score_text, (1150, 860))
+                    screen.blit(enemy_score_value, (1570, 860))
+                else:
+                    # TODO here goes the game ending screen
 
 
                 pos = pygame.mouse.get_pos()
